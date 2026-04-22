@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jayco Management Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f4f8;--sf:#fff;--sf2:#f7f9fc;--bd:#e2e8f0;--bd2:#cbd5e1;
+  --tx:#1a202c;--tx2:#4a5568;--mu:#718096;
+  --blue:#2980b9;--green:#27ae60;--red:#c0392b;--orange:#d68910;
+  --purple:#7d3c98;--teal:#0e6655;--navy:#1a3a5c;
+  --xl-border:#d0d7de;--xl-hdr:#f6f8fa;--xl-sel:#e8f4fd;--xl-alt:#fafbfc;
+  --sh:0 1px 3px rgba(0,0,0,.08);--sh2:0 4px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+
+/* ══ LOGIN SCREEN ══════════════════════════════════════════ */
+.login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:linear-gradient(135deg,#1a3a5c 0%,#2980b9 100%)}
+.login-card{
+  background:#fff;border-radius:16px;padding:40px;width:380px;
+  box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.login-logo{font-family:'Poppins',sans-serif;font-size:28px;font-weight:800;
+  color:var(--navy);text-align:center;margin-bottom:4px}
+.login-logo span{color:var(--red)}
+.login-sub{text-align:center;font-size:12px;color:var(--mu);margin-bottom:28px}
+.login-field{margin-bottom:16px}
+.login-field label{display:block;font-size:11px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.login-field input{width:100%;padding:10px 14px;border:1px solid var(--bd);
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;
+  background:#fff;color:var(--tx);transition:.15s}
+.login-field input:focus{outline:none;border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(41,128,185,.12)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+.login-btn{width:100%;padding:11px;background:var(--navy);color:#fff;border:none;
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;margin-top:8px;transition:.15s}
+.login-btn:hover{background:var(--blue)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ══ MAIN APP ═════════════════════════════════════════════ */
+.app{display:none}
+.app.visible{display:block}
+
+/* TOPBAR */
+.topbar{background:var(--navy);height:50px;display:flex;align-items:center;
+  padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.logo{font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#fff}
+.logo span{color:#f39c12}
+.module-tabs{display:flex;gap:2px;margin-left:4px}
+.mtab{padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;
+  color:rgba(255,255,255,.55);transition:.15s;white-space:nowrap}
+.mtab:hover{color:#fff;background:rgba(255,255,255,.1)}
+.mtab.active{color:#fff;background:rgba(255,255,255,.18)}
+.mtab.prod.active{border-bottom:2px solid #f39c12}
+.mtab.vendor.active{border-bottom:2px solid #2ecc71}
+.mtab.admin.active{border-bottom:2px solid #e74c3c}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.user-badge{font-size:11px;color:rgba(255,255,255,.7);font-weight:500}
+.role-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;
+  background:rgba(255,255,255,.15);color:rgba(255,255,255,.9)}
+.dot{width:7px;height:7px;border-radius:50%;background:#2ecc71}
+.dot.warn{background:#f39c12}.dot.err{background:#e74c3c}
+.sync-lbl{font-size:11px;color:rgba(255,255,255,.55)}
+
+/* SUBTABS */
+.subtab-bar{background:var(--sf);border-bottom:1px solid var(--bd);
+  padding:0 20px;display:flex;gap:2px}
+.stab{padding:10px 14px;font-size:12px;font-weight:500;color:var(--mu);
+  cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+.stab:hover{color:var(--tx)}
+.stab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+
+/* VIEWS */
+.view{display:none;padding:16px 20px}.view.active{display:block}
+
+/* BUTTONS */
+.btn{padding:6px 12px;border-radius:6px;border:1px solid var(--bd);background:var(--sf);
+  color:var(--tx2);cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;
+  font-weight:500;display:inline-flex;align-items:center;gap:4px;transition:.15s}
+.btn:hover{background:var(--sf2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-g{background:var(--green);border-color:var(--green);color:#fff}
+.btn-g:hover:not(:disabled){background:#1e8449}
+.btn-b{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-b:hover{background:#2471a3}
+.btn-r{background:var(--red);border-color:var(--red);color:#fff}
+.btn-r:hover{background:#a93226}
+.btn-o{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn-sm{padding:3px 8px;font-size:11px}
+
+/* CARDS / PANELS */
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:10px;
+  overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+.ph{padding:10px 14px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pt{font-size:13px;font-weight:700;color:var(--tx)}
+.pb{padding:14px 16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
+
+/* KPI CARDS */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:10px;
+  padding:14px 16px;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.kpi.k-red::after{background:var(--red)}.kpi.k-orange::after{background:var(--orange)}
+.kpi.k-green::after{background:var(--green)}.kpi.k-blue::after{background:var(--blue)}
+.kpi.k-purple::after{background:var(--purple)}
+.kpi-l{font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:5px}
+.kpi-v{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;line-height:1}
+.kpi-s{font-size:10px;color:var(--mu);margin-top:3px}
+
+/* TABLES */
+.tbl-w{overflow:auto;max-height:340px}
+.tbl-w::-webkit-scrollbar{width:4px;height:4px}
+.tbl-w::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{background:var(--sf2);color:var(--mu);font-weight:700;font-size:10px;
+  text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;
+  position:sticky;top:0;border-bottom:1px solid var(--bd);white-space:nowrap}
+table.dt td{padding:7px 10px;border-bottom:1px solid var(--bd);
+  color:var(--tx2);vertical-align:middle}
+table.dt tr:hover td{background:rgba(41,128,185,.03)}
+table.dt tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;
+  font-size:10px;font-weight:700}
+.badge-green{background:#d4edda;color:#155724}
+.badge-red{background:#f8d7da;color:#721c24}
+.badge-orange{background:#fff3cd;color:#856404}
+.badge-blue{background:#cce5ff;color:#004085}
+.badge-grey{background:#e2e8f0;color:#4a5568}
+.empty{text-align:center;padding:32px;color:var(--mu);font-size:12px}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.g1{grid-template-columns:1fr}
+@media(max-width:700px){.form-grid,.form-grid.g3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:10px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.6px}
+.field input,.field select,.field textarea{
+  background:#fff;border:1px solid var(--bd);color:var(--tx);
+  padding:7px 10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(41,128,185,.12)}
+.field textarea{resize:vertical;min-height:60px}
+.field-note{font-size:10px;color:var(--mu);margin-top:2px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--bd)}
+
+/* EXCEL ENTRY FORM */
+.entry-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:8px;
+  background:var(--sf);border:1px solid var(--bd);border-radius:8px;
+  padding:8px 12px;box-shadow:var(--sh);flex-wrap:wrap}
+.date-grp{display:flex;align-items:center;gap:8px}
+.date-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px}
+input[type=date]{background:#fff;border:1px solid var(--xl-border);color:var(--tx);
+  padding:4px 10px;border-radius:5px;font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:600;height:28px}
+input[type=date]:focus{outline:none;border-color:var(--blue)}
+.xl-wrap{background:#fff;border:1px solid var(--xl-border);border-radius:6px;
+  overflow:hidden;box-shadow:var(--sh2)}
+.xl-scroll{overflow-x:auto}
+.xl-tbl{width:100%;border-collapse:collapse;min-width:860px;font-size:12px}
+.xl-tbl thead th{background:var(--xl-hdr);color:#57606a;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;padding:5px 8px;text-align:center;
+  white-space:nowrap;border-right:1px solid var(--xl-border);
+  border-bottom:2px solid var(--xl-border);position:sticky;top:0;z-index:5;height:28px}
+.xl-tbl thead th:first-child{text-align:left;position:sticky;left:0;z-index:10;
+  border-right:2px solid var(--xl-border);min-width:148px;width:148px}
+.xl-stage-row td{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  padding:4px 10px;border-bottom:1px solid var(--xl-border);height:22px}
+.xl-stage-row td:first-child{position:sticky;left:0;z-index:3;border-right:2px solid var(--xl-border)}
+.xl-dr{height:24px}
+.xl-dr td{border-bottom:1px solid var(--xl-border);border-right:1px solid var(--xl-border);
+  padding:0;height:24px;vertical-align:middle}
+.xl-dr:nth-child(even) td{background:var(--xl-alt)}
+.xl-dr:hover td{background:var(--xl-sel) !important}
+.xl-person{position:sticky;left:0;z-index:2;padding:0 8px !important;
+  font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;
+  background:#fff !important;border-right:2px solid var(--xl-border) !important;
+  min-width:148px;width:148px}
+.xl-dr:nth-child(even) .xl-person{background:var(--xl-alt) !important}
+.xl-dr:hover .xl-person{background:var(--xl-sel) !important}
+.xl-total-row td{font-size:10px;font-weight:600;color:var(--mu);font-style:italic;
+  padding:3px 8px;text-align:right;height:20px;
+  background:#f6f8fa;border-bottom:2px solid var(--xl-border)}
+.xl-total-row td:first-child{position:sticky;left:0;z-index:2;
+  background:#f6f8fa !important;border-right:2px solid var(--xl-border)}
+.xi{width:100%;height:24px;background:transparent;border:none;color:var(--tx);
+  font-family:'Inter',sans-serif;font-size:12px;padding:0 6px;display:block}
+.xi:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px #2980b9;position:relative;z-index:1}
+.xi-qty{width:100%;height:24px;background:transparent;border:none;color:var(--tx);
+  font-family:'Inter',sans-serif;font-size:12px;padding:0 4px;text-align:right;display:block}
+.xi-qty:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px #2980b9;position:relative;z-index:1}
+
+/* VENDOR INVOICE TABLE INPUT */
+.vi-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:1100px}
+.vi-tbl th{background:var(--xl-hdr);color:#57606a;font-size:10px;font-weight:700;
+  text-transform:uppercase;padding:6px 8px;border:1px solid var(--xl-border);
+  white-space:nowrap;position:sticky;top:0;z-index:3}
+.vi-tbl td{border:1px solid var(--xl-border);padding:1px;vertical-align:middle}
+.vi-tbl tr:nth-child(even) td{background:var(--xl-alt)}
+.vi-tbl tr:hover td{background:var(--xl-sel) !important}
+.vi-inp{width:100%;border:none;background:transparent;font-family:'Inter',sans-serif;
+  font-size:12px;padding:4px 6px;color:var(--tx);height:28px}
+.vi-inp:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px #2980b9}
+.vi-inp.num{text-align:right}
+
+/* OUTSTANDING TABLE */
+.out-row-vendor{font-weight:700;background:#f0f4f8 !important}
+.overdue-amount{color:var(--red);font-weight:700}
+.due-soon-amount{color:var(--orange);font-weight:700}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:200;align-items:flex-start;justify-content:center;
+  padding-top:60px;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:#fff;border:1px solid var(--bd);border-radius:14px;
+  padding:24px;width:600px;max-width:95vw;max-height:85vh;
+  overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.15)}
+.modal.wide{width:800px}
+.modal h3{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-close{margin-left:auto;background:none;border:none;cursor:pointer;
+  font-size:18px;color:var(--mu);line-height:1}
+.modal-close:hover{color:var(--red)}
+
+/* CONFIG */
+.cfg-intro{background:#fffbeb;border:1px solid #f6e05e;border-radius:8px;
+  padding:10px 14px;font-size:12px;color:#744210;line-height:1.6;margin-bottom:14px}
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.cfg-stage{background:#fff;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.cfg-sh{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--bd)}
+.cfg-sn{font-size:12px;font-weight:700}
+.cfg-body{padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.cfg-pr{display:flex;align-items:center;justify-content:space-between;
+  background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:4px 8px 4px 10px}
+.cfg-pn{font-size:12px;font-weight:500;color:var(--tx2)}
+.cfg-add{display:flex;gap:5px;margin-top:4px}
+.cfg-add input{flex:1;background:#fff;border:1px solid var(--bd);color:var(--tx);
+  padding:5px 8px;border-radius:5px;font-family:'Inter',sans-serif;font-size:11px}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;right:18px;background:#fff;
+  border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font-size:12px;
+  font-weight:500;display:none;align-items:center;gap:8px;z-index:300;
+  box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.toast.show{display:flex}
+
+/* DIVIDER */
+.sec-div{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;
+  letter-spacing:.7px;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">Jayco <span>Portal</span></div>
+    <div class="login-sub">Production & Vendor Management System</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="lUser" placeholder="Enter username"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="lPass" placeholder="Enter password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <div style="margin-top:14px;text-align:center">
+      <button onclick="openLoginConfig()"
+        style="background:none;border:none;color:#2980b9;font-size:12px;
+        cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif">
+        ⚙ First time? Configure API settings
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">Jayco <span>Portal</span></div>
+    <div class="module-tabs" id="moduleTabs"></div>
+    <div class="topbar-right">
+      <div class="dot warn" id="syncDot"></div>
+      <span class="sync-lbl" id="syncLbl">—</span>
+      <span class="user-badge" id="userBadge"></span>
+      <span class="role-badge" id="roleBadge"></span>
+      <button class="btn btn-sm" onclick="openSettings()"
+        style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;font-size:11px">⚙</button>
+      <button class="btn btn-sm btn-r" onclick="doLogout()" style="font-size:11px">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- SUBTAB BAR -->
+  <div class="subtab-bar" id="subtabBar"></div>
+
+  <!-- VIEWS CONTAINER -->
+  <div id="viewsContainer">
+
+    <!-- ── PRODUCTION: ENTRY ── -->
+    <div class="view" id="view-prod-entry">
+      <div class="entry-toolbar">
+        <div class="date-grp">
+          <span class="date-lbl">Date</span>
+          <input type="date" id="entryDate">
+        </div>
+        <div style="width:1px;height:20px;background:var(--bd)"></div>
+        <span style="font-size:11px;font-weight:600;color:var(--green)" id="eInfo"></span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="clearEntries()">✕ Clear</button>
+          <button class="btn btn-g btn-sm" id="btnSub" onclick="submitProdForm()">▲ Submit</button>
+        </div>
+      </div>
+      <div class="xl-wrap"><div class="xl-scroll">
+        <table class="xl-tbl">
+          <thead><tr>
+            <th style="text-align:left;padding-left:10px">Person</th>
+            <th>Product 1</th><th style="width:64px">Qty</th>
+            <th>Product 2</th><th style="width:64px">Qty</th>
+            <th>Product 3</th><th style="width:64px">Qty</th>
+            <th>Product 4</th><th style="width:64px">Qty</th>
+            <th>Product 5</th><th style="width:64px">Qty</th>
+          </tr></thead>
+          <tbody id="xlBody"></tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <!-- ── PRODUCTION: DASHBOARD ── -->
+    <div class="view" id="view-prod-dash">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+        background:var(--sf);border:1px solid var(--bd);border-radius:10px;
+        padding:12px 16px;box-shadow:var(--sh);align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px">Month</span>
+          <select id="fMonth" onchange="applyProdF()" style="min-width:130px"><option value="">All Months</option></select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px">Stage</span>
+          <select id="fStage" onchange="applyProdF()" style="min-width:130px"><option value="">All Stages</option></select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px">Person</span>
+          <select id="fPerson" onchange="applyProdF()" style="min-width:130px"><option value="">All Persons</option></select>
+        </div>
+        <button class="btn btn-sm" onclick="clearProdF()">✕</button>
+        <button class="btn btn-b btn-sm" onclick="loadProd()">↻</button>
+      </div>
+      <div class="kpis">
+        <div class="kpi k-red"><div class="kpi-l">Total Qty</div><div class="kpi-v" id="pkT">—</div><div class="kpi-s" id="pkTs">—</div></div>
+        <div class="kpi k-blue"><div class="kpi-l">Active Days</div><div class="kpi-v" id="pkD">—</div><div class="kpi-s">days</div></div>
+        <div class="kpi k-green"><div class="kpi-l">Avg / Day</div><div class="kpi-v" id="pkA">—</div><div class="kpi-s">units/day</div></div>
+        <div class="kpi k-purple"><div class="kpi-l">Persons</div><div class="kpi-v" id="pkP">—</div><div class="kpi-s">active</div></div>
+        <div class="kpi k-orange"><div class="kpi-l">SKUs</div><div class="kpi-v" id="pkI">—</div><div class="kpi-s">products</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel"><div class="ph"><span class="pt">📈 Monthly Trend</span></div>
+          <div class="pb"><div style="position:relative;height:200px"><canvas id="cM"></canvas></div></div></div>
+        <div class="panel"><div class="ph"><span class="pt">🏭 Stage-wise</span></div>
+          <div class="pb"><div style="position:relative;height:200px"><canvas id="cS"></canvas></div></div></div>
+      </div>
+      <div class="g2">
+        <div class="panel"><div class="ph"><span class="pt">👷 Person-wise</span></div>
+          <div class="tbl-w"><table class="dt" id="tPer">
+            <thead><tr><th>#</th><th>Person</th><th>Qty</th><th>Share</th></tr></thead>
+            <tbody></tbody></table></div></div>
+        <div class="panel"><div class="ph"><span class="pt">📦 Item-wise</span></div>
+          <div class="tbl-w"><table class="dt" id="tItm">
+            <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Share</th></tr></thead>
+            <tbody></tbody></table></div></div>
+      </div>
+      <div class="panel"><div class="ph"><span class="pt">📅 Day-wise Log</span>
+        <span style="font-size:11px;color:var(--mu)" id="pdCnt"></span></div>
+        <div class="tbl-w"><table class="dt" id="tDay">
+          <thead><tr><th>Date</th><th>Stage</th><th>Person</th><th>Product</th><th>Qty</th></tr></thead>
+          <tbody></tbody></table></div></div>
+    </div>
+
+    <!-- ── PRODUCTION: FORM LAYOUT ── -->
+    <div class="view" id="view-prod-layout">
+      <div class="cfg-intro">
+        <b>Form Layout Editor</b> — Add or remove staff per stage.
+        One person can appear in multiple stages. Click <b>Save Layout</b> when done.
+      </div>
+      <div class="cfg-grid" id="cfgGrid"></div>
+      <div style="padding:14px 0 2px;display:flex;gap:8px;align-items:center">
+        <button class="btn btn-g" onclick="saveLayout()">💾 Save Layout</button>
+        <span style="font-size:11px;color:var(--mu)" id="cfgNote"></span>
+      </div>
+    </div>
+
+    <!-- ── VENDOR: INVOICES ── -->
+    <div class="view" id="view-vendor-invoices">
+      <div class="ph" style="margin-bottom:12px;background:var(--sf);
+        border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh)">
+        <span class="pt">🧾 Purchase Invoices</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-o" onclick="openImportModal()">📥 Import from Tally</button>
+          <button class="btn btn-sm btn-g" onclick="openInvoiceModal()">＋ New Invoice</button>
+        </div>
+      </div>
+      <!-- Filter -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <select id="vfVendor" onchange="applyVendorF()" style="min-width:180px"><option value="">All Vendors</option></select>
+        <select id="vfStatus" onchange="applyVendorF()">
+          <option value="">All Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+        </select>
+        <input type="date" id="vfFrom" onchange="applyVendorF()"
+          style="height:32px;padding:4px 8px;border:1px solid var(--bd);border-radius:6px;font-size:12px">
+        <input type="date" id="vfTo" onchange="applyVendorF()"
+          style="height:32px;padding:4px 8px;border:1px solid var(--bd);border-radius:6px;font-size:12px">
+        <button class="btn btn-sm" onclick="clearVendorF()">✕ Clear</button>
+        <button class="btn btn-b btn-sm" onclick="loadVendor()">↻ Refresh</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--mu)" id="invCount"></span>
+      </div>
+      <div class="panel">
+        <div class="tbl-w" style="max-height:440px"><table class="dt" id="tInv">
+          <thead><tr>
+            <th>Invoice No</th><th>Vendor</th><th>Type</th><th>Date</th>
+            <th>Due Date</th><th style="text-align:right">Base Amt</th>
+            <th style="text-align:right">GST</th><th style="text-align:right">Total</th>
+            <th style="text-align:right">Net Payable</th><th>Status</th>
+            <th>GST2B</th><th>Invoice</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── VENDOR: PAYMENTS ── -->
+    <div class="view" id="view-vendor-payments">
+      <div class="ph" style="margin-bottom:12px;background:var(--sf);
+        border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh)">
+        <span class="pt">💳 Payments</span>
+        <button class="btn btn-sm btn-g" onclick="openPaymentModal()">＋ Record Payment</button>
+      </div>
+      <div class="panel">
+        <div class="tbl-w" style="max-height:500px"><table class="dt" id="tPay">
+          <thead><tr>
+            <th>Date</th><th>Vendor</th><th>Amount</th>
+            <th>Method</th><th>Reference</th><th>Invoices</th><th>Note</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── VENDOR: DASHBOARD ── -->
+    <div class="view" id="view-vendor-dash">
+      <div class="kpis">
+        <div class="kpi k-red"><div class="kpi-l">Total Outstanding</div><div class="kpi-v" id="vkTotal">—</div><div class="kpi-s">net payable</div></div>
+        <div class="kpi k-orange"><div class="kpi-l">Overdue</div><div class="kpi-v" id="vkOverdue">—</div><div class="kpi-s">past due date</div></div>
+        <div class="kpi k-blue"><div class="kpi-l">Due in 15 Days</div><div class="kpi-v" id="vkSoon">—</div><div class="kpi-s">upcoming</div></div>
+        <div class="kpi k-green"><div class="kpi-l">Vendors</div><div class="kpi-v" id="vkVendors">—</div><div class="kpi-s">with outstanding</div></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><span class="pt">📊 Outstanding by Vendor</span>
+          <span style="font-size:11px;color:var(--mu)">Pending invoices only</span></div>
+        <div class="tbl-w" style="max-height:500px"><table class="dt" id="tOut">
+          <thead><tr>
+            <th>Vendor</th><th style="text-align:right">Total Outstanding</th>
+            <th style="text-align:right">Overdue</th>
+            <th style="text-align:right">Due in 15d</th>
+            <th>Pending Bills</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN: VENDOR MASTER ── -->
+    <div class="view" id="view-admin-vendors">
+      <div class="ph" style="margin-bottom:12px;background:var(--sf);
+        border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh)">
+        <span class="pt">👥 Vendor Master</span>
+        <button class="btn btn-sm btn-g" onclick="openVendorModal()">＋ Add Vendor</button>
+      </div>
+      <div class="panel">
+        <div class="tbl-w" style="max-height:500px"><table class="dt" id="tVendors">
+          <thead><tr>
+            <th>GSTIN</th><th>Vendor Name</th><th>Category</th>
+            <th>Credit Days</th><th>Status</th><th>Created</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN: SETTINGS ── -->
+    <div class="view" id="view-admin-settings">
+      <div class="g2">
+        <div class="panel"><div class="ph"><span class="pt">🔗 API Configuration</span></div>
+          <div class="pb">
+            <div class="field" style="margin-bottom:12px">
+              <label>Production Apps Script URL</label>
+              <input id="sProdUrl" placeholder="https://script.google.com/macros/s/.../exec">
+              <div class="field-note">Google Sheet 1: Jayco Production</div>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Vendor Apps Script URL</label>
+              <input id="sVendorUrl" placeholder="https://script.google.com/macros/s/.../exec">
+              <div class="field-note">Google Sheet 2: Jayco Vendor</div>
+            </div>
+            <button class="btn btn-g" onclick="saveSettings()">💾 Save & Reconnect</button>
+          </div>
+        </div>
+        <div class="panel"><div class="ph"><span class="pt">ℹ Setup Guide</span></div>
+          <div class="pb" style="font-size:12px;line-height:1.8;color:var(--tx2)">
+            <b>Production Sheet:</b><br>
+            • Paste <code>apps_script.js</code> → Run <code>setup</code> → Deploy<br><br>
+            <b>Vendor Sheet:</b><br>
+            • Paste <code>vendor_apps_script.js</code> → Run <code>setup</code> → Deploy<br><br>
+            <b>Both deployments:</b><br>
+            • Execute as: <b>Me</b><br>
+            • Who has access: <b>Anyone</b><br><br>
+            <b>Default logins:</b><br>
+            • admin / admin123<br>
+            • accounts / acc123<br>
+            • production / prod123
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /viewsContainer -->
+</div><!-- /app -->
+
+<!-- ════ MODALS ════ -->
+
+<!-- Vendor Modal -->
+<div class="overlay" id="vendorModal">
+  <div class="modal">
+    <h3>👥 <span id="vendorModalTitle">Add Vendor</span>
+      <button class="modal-close" onclick="closeModal('vendorModal')">✕</button></h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>GSTIN *</label>
+        <input id="vGstin" placeholder="e.g. 24AABCM1234A1Z5" style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="field">
+        <label>Vendor Name *</label>
+        <input id="vName" placeholder="Full legal name" style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="field">
+        <label>Short Name</label>
+        <input id="vShort" placeholder="Short/display name">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="vCategory">
+          <option>GST Purchase</option><option>IGST Purchase</option>
+          <option>Labour Work</option><option>Exempt</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Credit Days</label>
+        <input id="vCredit" type="number" value="45" min="0">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="vActive"><option value="YES">Active</option><option value="NO">Inactive</option></select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Address</label>
+      <textarea id="vAddress" placeholder="Vendor address"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('vendorModal')">Cancel</button>
+      <button class="btn btn-g" onclick="saveVendorForm()">💾 Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div class="overlay" id="invoiceModal">
+  <div class="modal wide">
+    <h3>🧾 New Invoice
+      <button class="modal-close" onclick="closeModal('invoiceModal')">✕</button></h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>GSTIN *</label>
+        <input id="iGstin" placeholder="Vendor GSTIN" style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase();lookupVendor(this.value)">
+        <div class="field-note" id="iVendorLookup" style="color:var(--green)"></div>
+      </div>
+      <div class="field">
+        <label>Vendor Name *</label>
+        <input id="iVendorName" placeholder="Auto-filled from GSTIN" style="text-transform:uppercase">
+      </div>
+      <div class="field">
+        <label>Invoice Type</label>
+        <select id="iType">
+          <option>GST Purchase</option><option>IGST Purchase</option>
+          <option>Labour Work</option><option>Exempt</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Invoice No *</label>
+        <input id="iNo" placeholder="Invoice number">
+      </div>
+      <div class="field">
+        <label>Invoice Date *</label>
+        <input type="date" id="iDate" onchange="calcDueDate()">
+      </div>
+      <div class="field">
+        <label>Due Date</label>
+        <input type="date" id="iDue">
+        <div class="field-note">Auto-calculated from credit period</div>
+      </div>
+    </div>
+    <div class="sec-div">Amounts</div>
+    <div class="form-grid g3">
+      <div class="field">
+        <label>Base Amount *</label>
+        <input type="number" id="iBase" placeholder="0.00" oninput="calcInvTotal()">
+      </div>
+      <div class="field">
+        <label>CGST</label>
+        <input type="number" id="iCgst" placeholder="0.00" oninput="calcInvTotal()">
+      </div>
+      <div class="field">
+        <label>SGST</label>
+        <input type="number" id="iSgst" placeholder="0.00" oninput="calcInvTotal()">
+      </div>
+      <div class="field">
+        <label>IGST</label>
+        <input type="number" id="iIgst" placeholder="0.00" oninput="calcInvTotal()">
+      </div>
+      <div class="field">
+        <label>Invoice Total</label>
+        <input type="number" id="iTotal" placeholder="0.00" readonly
+          style="background:var(--sf2);font-weight:700">
+      </div>
+      <div class="field">
+        <label>TDS</label>
+        <select id="iTds"><option value="NO">No</option><option value="YES">Yes</option></select>
+      </div>
+      <div class="field">
+        <label>Net Payable</label>
+        <input type="number" id="iNet" placeholder="0.00">
+        <div class="field-note">Edit if TDS applies</div>
+      </div>
+      <div class="field">
+        <label>GST2B</label>
+        <select id="iGst2b"><option value="">Not Checked</option>
+          <option value="Matched">Matched</option><option value="Pending">Pending</option>
+          <option value="Mismatch">Mismatch</option></select>
+      </div>
+    </div>
+    <div class="sec-div">Links & Notes</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Invoice PDF Link (OneDrive)</label>
+        <input id="iLink" placeholder="Paste OneDrive link">
+      </div>
+      <div class="field">
+        <label>PO Link</label>
+        <input id="iPo" placeholder="Purchase order link">
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Note</label>
+      <textarea id="iNote" placeholder="Any remarks"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('invoiceModal')">Cancel</button>
+      <button class="btn btn-g" onclick="saveInvoiceForm()">💾 Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="overlay" id="paymentModal">
+  <div class="modal wide">
+    <h3>💳 Record Payment
+      <button class="modal-close" onclick="closeModal('paymentModal')">✕</button></h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Vendor *</label>
+        <select id="pVendor" onchange="loadVendorOutstanding()">
+          <option value="">Select vendor…</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Payment Date *</label>
+        <input type="date" id="pDate">
+      </div>
+      <div class="field">
+        <label>Amount *</label>
+        <input type="number" id="pAmount" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Payment Method</label>
+        <select id="pMethod">
+          <option>Bank Transfer</option><option>NEFT</option><option>RTGS</option>
+          <option>IMPS</option><option>Cheque</option><option>Cash</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Reference / UTR No</label>
+        <input id="pRef" placeholder="Transaction reference">
+      </div>
+    </div>
+    <!-- Outstanding invoices for selected vendor -->
+    <div class="sec-div">Pending Invoices — Select which bills this payment covers</div>
+    <div id="pendingInvoicesArea">
+      <div class="empty" style="padding:16px">Select a vendor to see pending invoices</div>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Note</label>
+      <textarea id="pNote" placeholder="Payment remarks"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('paymentModal')">Cancel</button>
+      <button class="btn btn-g" onclick="savePaymentForm()">💾 Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tally Import Modal -->
+<div class="overlay" id="importModal">
+  <div class="modal wide">
+    <h3>📥 Import from Tally / Excel
+      <button class="modal-close" onclick="closeModal('importModal')">✕</button></h3>
+    <div style="background:#f0f9ff;border:1px solid #bee3f8;border-radius:8px;
+      padding:12px 14px;font-size:12px;color:#2c5282;margin-bottom:14px;line-height:1.7">
+      <b>How to import:</b> Export purchase register from Tally → Open in Excel →
+      Copy columns: <b>GSTIN, Vendor Name, Invoice Type, Invoice No, Invoice Date,
+      Base Amount, CGST, SGST, IGST, Invoice Total, Net Payable</b> →
+      Paste below. Duplicates (same GSTIN + Invoice No) are skipped automatically.
+    </div>
+    <div class="xl-scroll" style="border:1px solid var(--xl-border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+      <table class="vi-tbl" id="importTable">
+        <thead><tr>
+          <th style="width:30px">#</th>
+          <th>GSTIN</th><th>Vendor Name</th><th>Type</th>
+          <th>Invoice No</th><th>Invoice Date</th>
+          <th>Base Amt</th><th>CGST</th><th>SGST</th><th>IGST</th>
+          <th>Total</th><th>Net Payable</th>
+        </tr></thead>
+        <tbody id="importBody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-sm" onclick="addImportRow()">＋ Add Row</button>
+      <button class="btn btn-sm" onclick="clearImportRows()">✕ Clear All</button>
+      <span style="font-size:11px;color:var(--mu)" id="importNote"></span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn" onclick="closeModal('importModal')">Cancel</button>
+        <button class="btn btn-g" onclick="submitImport()">▲ Import Invoices</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let SESSION = null; // {username, role, name}
+let CFG = {prodUrl:'', vendorUrl:''};
+let PROD_DB = [], PROD_FLT = [], PROD_LOADED = false;
+let VENDORS = [], INVOICES = [], PAYMENTS = [], OUTSTANDING = [];
+let cMc, cSc;
+
+// Production form layout
+let FORM_CONFIG = [
+  {stage:'1 (Bottom)',color:'#2980b9',persons:['KALUSHING','MAHESH','PRABHAT BHAI','BUDHAJI','DHARMESH BHAI','GANPAT','GOPAL','KETAN BHAI']},
+  {stage:'1 (CAP)',color:'#0e6655',persons:['GANPAT','RAMESH','BUDHAJI','KETAN BHAI']},
+  {stage:'2 (Drill)',color:'#1e8449',persons:['KIRAN','JAGDISH','VISHAL','PRABHAT BHAI','KETAN BHAI','BUDHAJI','SAHIL']},
+  {stage:'3 (Berrings)',color:'#b7950b',persons:['KETAN BHAI','PAVAN','JASHPAL','LAXMAN BHAI','FARUKH BHAI','SANDIP','BHAVIN','CHIRAG','GANPAT','MARUTI INDUSTRIES']},
+  {stage:'4 ( Grinding)',color:'#c0392b',persons:['VANRAJ','DHAVAL']},
+  {stage:'5 ( Inspection)',color:'#7d3c98',persons:['DILIP']},
+  {stage:'6 (Paint)',color:'#ca6f1e',persons:['PARESH','BHARAT','VANRAJ','CHIRAG']},
+  {stage:'Ring',color:'#a04000',persons:['PRAKASH']},
+];
+
+const ROLE_MODULES = {
+  Admin:      ['prod','vendor','admin'],
+  Production: ['prod'],
+  Accounts:   ['vendor'],
+};
+const MODULE_TABS = {
+  prod:   {label:'🏭 Production', tabs:[
+    {id:'prod-entry',  label:'Entry Form'},
+    {id:'prod-dash',   label:'Dashboard'},
+    {id:'prod-layout', label:'Edit Form Layout'},
+  ]},
+  vendor: {label:'🧾 Vendor', tabs:[
+    {id:'vendor-invoices', label:'Invoices'},
+    {id:'vendor-payments', label:'Payments'},
+    {id:'vendor-dash',     label:'Dashboard'},
+  ]},
+  admin:  {label:'⚙ Admin', tabs:[
+    {id:'admin-vendors',  label:'Vendor Master'},
+    {id:'admin-settings', label:'Settings'},
+  ]},
+};
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const s = localStorage.getItem('jaycoCfg');
+  if (s) CFG = JSON.parse(s);
+  document.getElementById('entryDate').value = todayStr();
+  document.getElementById('pDate').value = todayStr();
+  // init import rows
+  for(let i=0;i<5;i++) addImportRow();
+});
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+// ═══════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════
+async function doLogin() {
+  const user = document.getElementById('lUser').value.trim();
+  const pass = document.getElementById('lPass').value.trim();
+  if (!user||!pass){ showLoginErr('Enter username and password'); return; }
+  if (!CFG.vendorUrl){ showLoginErr('App not configured. Contact admin.'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled=true; btn.textContent='Signing in…';
+  showLoginErr('');
+
+  try {
+    const res = await gsGet(CFG.vendorUrl, `action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+    if (res.status==='ok') {
+      SESSION = {username:res.username, role:res.role, name:res.name};
+      startApp();
+    } else {
+      showLoginErr(res.message || 'Invalid credentials');
+    }
+  } catch(e) {
+    showLoginErr('Connection failed. Check settings.');
+  }
+  btn.disabled=false; btn.textContent='Sign In';
+}
+
+function showLoginErr(msg){ document.getElementById('loginErr').textContent=msg; }
+
+function doLogout(){
+  SESSION=null; PROD_DB=[]; VENDORS=[]; INVOICES=[]; PAYMENTS=[];
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('lUser').value='';
+  document.getElementById('lPass').value='';
+}
+
+// ═══════════════════════════════════════════════════════
+// APP STARTUP
+// ═══════════════════════════════════════════════════════
+function startApp() {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('userBadge').textContent = SESSION.name;
+  document.getElementById('roleBadge').textContent = SESSION.role;
+
+  buildModuleTabs();
+  // Activate first allowed module
+  const modules = ROLE_MODULES[SESSION.role] || ['prod'];
+  activateModule(modules[0]);
+  loadAll();
+}
+
+function buildModuleTabs() {
+  const modules = ROLE_MODULES[SESSION.role] || [];
+  const bar = document.getElementById('moduleTabs');
+  bar.innerHTML = modules.map(m =>
+    `<div class="mtab ${m}" onclick="activateModule('${m}')" id="mtab-${m}">
+      ${MODULE_TABS[m].label}
+    </div>`
+  ).join('');
+}
+
+let currentModule = '', currentSubTab = '';
+function activateModule(mod) {
+  currentModule = mod;
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  const mt = document.getElementById('mtab-'+mod);
+  if (mt) mt.classList.add('active');
+
+  const tabs = MODULE_TABS[mod].tabs;
+  const bar = document.getElementById('subtabBar');
+  bar.innerHTML = tabs.map(t =>
+    `<div class="stab" onclick="activateSubTab('${t.id}')" id="stab-${t.id}">${t.label}</div>`
+  ).join('');
+  activateSubTab(tabs[0].id);
+}
+
+function activateSubTab(id) {
+  currentSubTab = id;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  const st = document.getElementById('stab-'+id);
+  if(st) st.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const vw = document.getElementById('view-'+id);
+  if(vw) vw.classList.add('active');
+
+  // Lazy load
+  if(id==='prod-dash') { applyProdF(); }
+  if(id==='prod-layout') { buildCfgGrid(); }
+  if(id==='vendor-invoices') { renderInvoices(); }
+  if(id==='vendor-payments') { renderPayments(); }
+  if(id==='vendor-dash') { loadOutstanding(); }
+  if(id==='admin-vendors') { renderVendors(); }
+  if(id==='admin-settings') {
+    document.getElementById('sProdUrl').value=CFG.prodUrl||'';
+    document.getElementById('sVendorUrl').value=CFG.vendorUrl||'';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════════════════════════
+async function gsGet(url, params) {
+  const r = await fetch(`${url}?${params}&t=${Date.now()}`);
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return await r.json();
+}
+async function gsPost(url, data) {
+  const r = await fetch(url, {
+    method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(data), redirect:'follow'
+  });
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return await r.json();
+}
+
+async function loadAll() {
+  updateBadge('loading');
+  await Promise.all([loadProd(), loadVendor()]);
+  updateBadge('ok');
+}
+async function loadProd() {
+  if (!CFG.prodUrl) return;
+  PROD_LOADED = false;
+  setBtnState('btnSub', false, '⟳ Loading…');
+  try {
+    const lc = await gsGet(CFG.prodUrl,'action=layout');
+    if(lc.stages?.length) FORM_CONFIG=lc.stages;
+    buildProdForm();
+    const dc = await gsGet(CFG.prodUrl,'action=data');
+    PROD_DB = (dc.records||[]).map(normProd);
+    PROD_LOADED = true;
+    setBtnState('btnSub', true, '▲ Submit');
+    buildProdFilterOpts();
+    applyProdF();
+    if (PROD_DB.length) toast(`✓ ${PROD_DB.length} production records`,'#27ae60');
+  } catch(e) { toast('Production load failed: '+e.message,'#c0392b'); }
+}
+async function loadVendor() {
+  if (!CFG.vendorUrl) return;
+  try {
+    const vc = await gsGet(CFG.vendorUrl,'action=vendors');
+    VENDORS = vc.vendors||[];
+    const ic = await gsGet(CFG.vendorUrl,'action=invoices');
+    INVOICES = (ic.invoices||[]).map(normaliseInv);
+    const pc = await gsGet(CFG.vendorUrl,'action=payments');
+    PAYMENTS = pc.payments||[];
+    buildVendorFilters();
+    if (currentSubTab==='vendor-invoices') renderInvoices();
+    if (currentSubTab==='vendor-payments') renderPayments();
+    if (currentSubTab==='admin-vendors') renderVendors();
+  } catch(e) { toast('Vendor load failed: '+e.message,'#c0392b'); }
+}
+
+function normaliseInv(d) {
+  return {
+    ...d,
+    'Invoice Date': fmtD(d['Invoice Date']),
+    'Due Date':     fmtD(d['Due Date']),
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// PRODUCTION — ENTRY FORM
+// ═══════════════════════════════════════════════════════
+function buildProdForm() {
+  const tbody=document.getElementById('xlBody');
+  let html='';
+  FORM_CONFIG.forEach(({stage,color,persons})=>{
+    html+=`<tr class="xl-stage-row">
+      <td colspan="11" style="background:${color}18;color:${color};border-left:4px solid ${color}">▸ ${stage}</td>
+    </tr>`;
+    persons.forEach(person=>{
+      html+=`<tr class="xl-dr" data-stage="${esc(stage)}" data-person="${esc(person)}">
+        <td class="xl-person" style="border-left:3px solid ${color}">${person}</td>
+        ${[0,1,2,3,4].map(()=>`
+          <td><input class="xi" oninput="updateProdInfo()"></td>
+          <td><input class="xi-qty" type="number" min="0" oninput="updateProdInfo()"></td>`).join('')}
+      </tr>`;
+    });
+    html+=`<tr class="xl-total-row" id="st-${eid(stage)}">
+      <td colspan="11">— ${stage} total: —</td></tr>`;
+  });
+  tbody.innerHTML=html;
+  const inputs=[...tbody.querySelectorAll('input')];
+  inputs.forEach((inp,i)=>{
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();if(inputs[i+1])inputs[i+1].focus();}
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const ntr=inp.closest('tr').nextElementSibling;
+        if(ntr?.classList.contains('xl-dr'))ntr.querySelector('input')?.focus();
+      }
+    });
+  });
+  updateProdInfo();
+}
+
+function clearEntries(){
+  document.querySelectorAll('#xlBody input').forEach(i=>i.value='');
+  document.getElementById('entryDate').value=todayStr();
+  updateProdInfo();
+}
+
+function updateProdInfo(){
+  let count=0,total=0;
+  document.querySelectorAll('#xlBody .xl-dr').forEach(tr=>{
+    const ps=tr.querySelectorAll('.xi'),qs=tr.querySelectorAll('.xi-qty');
+    ps.forEach((pi,i)=>{const q=parseFloat(qs[i]?.value)||0;if(pi.value.trim()&&q>0){count++;total+=q;}});
+  });
+  document.getElementById('eInfo').textContent=count?`${count} entr${count===1?'y':'ies'} · ${n(total)} units`:'';
+  FORM_CONFIG.forEach(({stage})=>{
+    let sq=0;
+    document.querySelectorAll(`#xlBody .xl-dr[data-stage="${esc(stage)}"]`).forEach(tr=>{
+      tr.querySelectorAll('.xi-qty').forEach(qi=>{sq+=parseFloat(qi.value)||0;});
+    });
+    const el=document.getElementById('st-'+eid(stage));
+    if(el)el.querySelector('td').textContent=sq>0?`▸ ${stage} total: ${n(sq)} units`:`— ${stage} total: —`;
+  });
+}
+
+async function submitProdForm(){
+  if(!CFG.prodUrl){openSettings();return;}
+  if(!PROD_LOADED){toast('⏳ Still loading — wait a moment','#d68910');return;}
+  const dateVal=document.getElementById('entryDate').value;
+  if(!dateVal){toast('Enter production date','#c0392b');return;}
+  const newRecs=[];
+  document.querySelectorAll('#xlBody .xl-dr').forEach(tr=>{
+    const stage=tr.dataset.stage,person=tr.dataset.person;
+    const ps=tr.querySelectorAll('.xi'),qs=tr.querySelectorAll('.xi-qty');
+    ps.forEach((pi,i)=>{
+      const prod=pi.value.trim(),qty=parseFloat(qs[i]?.value)||0;
+      if(prod&&qty>0)newRecs.push({date:dateVal,stage,person,item:prod,quantity:qty});
+    });
+  });
+  if(!newRecs.length){toast('Fill at least one Product + Qty','#c0392b');return;}
+  if(PROD_DB.some(r=>r.date===dateVal)&&!confirm(`Records for ${dateVal} exist. Append?`))return;
+  setBtnState('btnSub',false,'⟳ Saving…');
+  try{
+    const res=await gsPost(CFG.prodUrl,{action:'append',records:newRecs});
+    if(res.status==='ok'){toast(`✓ ${newRecs.length} records saved`,'#27ae60');clearEntries();await loadProd();}
+    else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Save failed: '+e.message,'#c0392b');}
+  setBtnState('btnSub',true,'▲ Submit');
+}
+
+// ═══════════════════════════════════════════════════════
+// PRODUCTION — DASHBOARD
+// ═══════════════════════════════════════════════════════
+function normProd(d){
+  let date=d.date||'';
+  if(typeof date==='number')date=new Date(Math.round((date-25569)*86400000)).toISOString().slice(0,10);
+  if(date.length>10)date=date.slice(0,10);
+  return{date,stage:String(d.stage||''),person:String(d.person||''),
+    item:String(d.item||d.product||''),quantity:Number(d.quantity||0)};
+}
+function buildProdFilterOpts(){
+  const months=[...new Set(PROD_DB.map(d=>d.date.slice(0,7)))].sort().reverse();
+  const stages=[...new Set(PROD_DB.map(d=>d.stage))].filter(Boolean).sort();
+  const persons=[...new Set(PROD_DB.map(d=>d.person))].filter(Boolean).sort();
+  pop('fMonth',months,m=>{const[y,mo]=m.split('-');return new Date(y,mo-1).toLocaleString('en-IN',{month:'long',year:'numeric'})});
+  pop('fStage',stages);pop('fPerson',persons);
+}
+function applyProdF(){
+  const fM=v('fMonth'),fS=v('fStage'),fP=v('fPerson');
+  PROD_FLT=PROD_DB.filter(d=>{
+    if(fM&&!d.date.startsWith(fM))return false;
+    if(fS&&d.stage!==fS)return false;
+    if(fP&&d.person!==fP)return false;
+    return true;
+  });
+  renderProdDash();
+}
+function clearProdF(){['fMonth','fStage','fPerson'].forEach(id=>document.getElementById(id).value='');applyProdF();}
+function renderProdDash(){
+  const F=PROD_FLT;
+  const total=F.reduce((s,d)=>s+d.quantity,0),days=new Set(F.map(d=>d.date)).size;
+  sv('pkT',n(total));sv('pkTs',F.length+' entries');sv('pkD',n(days));
+  sv('pkA',n(days?Math.round(total/days):0));
+  sv('pkP',n(new Set(F.map(d=>d.person)).size));
+  sv('pkI',n(new Set(F.map(d=>d.item)).size));
+  renderMo();renderSt();renderPerTbl();renderItmTbl();renderDayTbl();
+}
+function renderMo(){
+  const map={};PROD_FLT.forEach(d=>{const m=d.date.slice(0,7);map[m]=(map[m]||0)+d.quantity;});
+  const keys=Object.keys(map).sort(),vals=keys.map(k=>map[k]);
+  const lbls=keys.map(k=>{const[y,mo]=k.split('-');return new Date(y,mo-1).toLocaleString('en-IN',{month:'short',year:'2-digit'})});
+  const ctx=document.getElementById('cM').getContext('2d');
+  if(cMc)cMc.destroy();
+  cMc=new Chart(ctx,{type:'bar',data:{labels:lbls,datasets:[{data:vals,backgroundColor:'rgba(41,128,185,.7)',borderColor:'#2980b9',borderWidth:1,borderRadius:4}]},options:cOpts()});
+}
+function renderSt(){
+  const map={};PROD_FLT.forEach(d=>{map[d.stage]=(map[d.stage]||0)+d.quantity;});
+  const e=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const ctx=document.getElementById('cS').getContext('2d');
+  if(cSc)cSc.destroy();
+  cSc=new Chart(ctx,{type:'bar',data:{labels:e.map(x=>x[0]),datasets:[{data:e.map(x=>x[1]),backgroundColor:e.map(x=>stageColor(x[0])+'bb'),borderRadius:4,borderWidth:0}]},options:{...cOpts(),indexAxis:'y'}});
+}
+function renderPerTbl(){
+  const map={};PROD_FLT.forEach(d=>{map[d.person]=(map[d.person]||0)+d.quantity;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const total=sorted.reduce((s,e)=>s+e[1],0)||1,maxQ=sorted[0]?.[1]||1;
+  const tbody=document.querySelector('#tPer tbody');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="4" class="empty">No data</td></tr>';return;}
+  tbody.innerHTML=sorted.map(([p,q],i)=>`<tr>
+    <td><span style="width:18px;height:18px;border-radius:50%;background:${i<3?['#fef08a','#e5e7eb','#fed7aa'][i]:'#f0f4f8'};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${i+1}</span></td>
+    <td style="font-weight:600">${p}</td><td style="font-weight:700">${n(q)}</td>
+    <td><span style="height:5px;border-radius:3px;display:inline-block;width:${Math.round(q/maxQ*70)}px;background:#2980b9"></span>
+    <span style="font-size:10px;color:var(--mu);margin-left:5px">${pct(q,total)}</span></td></tr>`).join('');
+}
+function renderItmTbl(){
+  const map={};PROD_FLT.forEach(d=>{map[d.item]=(map[d.item]||0)+d.quantity;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const total=sorted.reduce((s,e)=>s+e[1],0)||1,maxQ=sorted[0]?.[1]||1;
+  const tbody=document.querySelector('#tItm tbody');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="4" class="empty">No data</td></tr>';return;}
+  tbody.innerHTML=sorted.map(([item,q],i)=>`<tr>
+    <td><span style="width:18px;height:18px;border-radius:50%;background:${i<3?['#fef08a','#e5e7eb','#fed7aa'][i]:'#f0f4f8'};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${i+1}</span></td>
+    <td style="font-weight:600">${item}</td><td style="font-weight:700">${n(q)}</td>
+    <td><span style="height:5px;border-radius:3px;display:inline-block;width:${Math.round(q/maxQ*70)}px;background:#b7950b"></span>
+    <span style="font-size:10px;color:var(--mu);margin-left:5px">${pct(q,total)}</span></td></tr>`).join('');
+}
+function renderDayTbl(){
+  const sorted=[...PROD_FLT].sort((a,b)=>b.date.localeCompare(a.date));
+  sv('pdCnt',sorted.length+' entries');
+  const tbody=document.querySelector('#tDay tbody');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No entries</td></tr>';return;}
+  tbody.innerHTML=sorted.slice(0,600).map(d=>`<tr>
+    <td style="white-space:nowrap;font-weight:500">${fmtD(d.date)}</td>
+    <td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${stageColor(d.stage)};margin-right:5px"></span>${d.stage}</td>
+    <td>${d.person}</td><td>${d.item}</td><td style="font-weight:700">${n(d.quantity)}</td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// PRODUCTION — LAYOUT
+// ═══════════════════════════════════════════════════════
+function buildCfgGrid(){
+  const grid=document.getElementById('cfgGrid');
+  grid.innerHTML=FORM_CONFIG.map(({stage,color,persons},si)=>`
+    <div class="cfg-stage">
+      <div class="cfg-sh" style="background:${color}12;border-bottom:2px solid ${color}40">
+        <span class="cfg-sn" style="color:${color}">${stage}</span>
+        <span style="font-size:10px;color:var(--mu)">${persons.length} person${persons.length!==1?'s':''}</span>
+      </div>
+      <div class="cfg-body">
+        ${persons.map((p,pi)=>`
+          <div class="cfg-pr">
+            <span class="cfg-pn">${p}</span>
+            <button class="btn btn-sm" style="color:var(--red);border-color:currentColor;background:transparent"
+              onclick="removePerson(${si},${pi})">✕</button>
+          </div>`).join('')}
+        <div class="cfg-add">
+          <input id="cadd-${si}" placeholder="Add name…" onkeydown="if(event.key==='Enter')addPerson(${si})">
+          <button class="btn btn-g btn-sm" onclick="addPerson(${si})">＋</button>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('cfgNote').textContent='';
+}
+function addPerson(si){
+  const inp=document.getElementById(`cadd-${si}`);
+  const name=inp.value.trim().toUpperCase();
+  if(!name)return;
+  if(FORM_CONFIG[si].persons.includes(name)){toast(name+' already in stage','#d68910');return;}
+  FORM_CONFIG[si].persons.push(name);inp.value='';buildCfgGrid();
+  document.getElementById('cfgNote').textContent='● Unsaved';
+}
+function removePerson(si,pi){
+  if(!confirm(`Remove "${FORM_CONFIG[si].persons[pi]}" from ${FORM_CONFIG[si].stage}?`))return;
+  FORM_CONFIG[si].persons.splice(pi,1);buildCfgGrid();
+  document.getElementById('cfgNote').textContent='● Unsaved';
+}
+async function saveLayout(){
+  if(!CFG.prodUrl){toast('Configure Production URL first','#c0392b');return;}
+  const btn=document.querySelector('#view-prod-layout .btn-g');
+  btn.disabled=true;btn.textContent='⟳ Saving…';
+  try{
+    await gsPost(CFG.prodUrl,{action:'saveLayout',stages:FORM_CONFIG});
+    buildProdForm();document.getElementById('cfgNote').textContent='✓ Saved';
+    toast('Layout saved','#27ae60');
+  }catch(e){toast('Save failed: '+e.message,'#c0392b');}
+  btn.disabled=false;btn.textContent='💾 Save Layout';
+}
+
+// ═══════════════════════════════════════════════════════
+// VENDOR — INVOICES
+// ═══════════════════════════════════════════════════════
+function buildVendorFilters(){
+  const sel=document.getElementById('vfVendor');
+  const cur=sel.value;
+  while(sel.options.length>1)sel.remove(1);
+  VENDORS.filter(v=>v.Active==='YES').forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v.GSTIN;o.text=v['Vendor Name'];sel.appendChild(o);
+  });
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+
+  // Payment vendor dropdown
+  const psel=document.getElementById('pVendor');
+  while(psel.options.length>1)psel.remove(1);
+  VENDORS.filter(vv=>vv.Active==='YES').forEach(vv=>{
+    const o=document.createElement('option');
+    o.value=vv.GSTIN;o.text=vv['Vendor Name'];psel.appendChild(o);
+  });
+}
+
+function applyVendorF(){renderInvoices();}
+function clearVendorF(){
+  document.getElementById('vfVendor').value='';
+  document.getElementById('vfStatus').value='';
+  document.getElementById('vfFrom').value='';
+  document.getElementById('vfTo').value='';
+  renderInvoices();
+}
+
+function renderInvoices(){
+  const fV=document.getElementById('vfVendor').value;
+  const fS=document.getElementById('vfStatus').value;
+  const fF=document.getElementById('vfFrom').value;
+  const fT=document.getElementById('vfTo').value;
+  const today=todayStr();
+
+  let data=[...INVOICES];
+  if(fV)data=data.filter(d=>String(d['GSTIN']).trim().toUpperCase()===fV.toUpperCase());
+  if(fS)data=data.filter(d=>String(d['Status']).toLowerCase().includes(fS.toLowerCase()));
+  if(fF)data=data.filter(d=>d['Invoice Date']>=fF);
+  if(fT)data=data.filter(d=>d['Invoice Date']<=fT);
+  data.sort((a,b)=>b['Invoice Date'].localeCompare(a['Invoice Date']));
+
+  document.getElementById('invCount').textContent=data.length+' invoices';
+  const tbody=document.querySelector('#tInv tbody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="13" class="empty">No invoices found</td></tr>';return;}
+
+  tbody.innerHTML=data.map(d=>{
+    const isOverdue=d['Status']==='Pending'&&d['Due Date']<today;
+    const isDueSoon=d['Status']==='Pending'&&d['Due Date']>=today&&d['Due Date']<=addDaysStr(today,15);
+    const statusBadge = d['Status']?.toLowerCase().includes('paid')
+      ?'<span class="badge badge-green">Paid</span>'
+      :isOverdue?'<span class="badge badge-red">Overdue</span>'
+      :isDueSoon?'<span class="badge badge-orange">Due Soon</span>'
+      :'<span class="badge badge-blue">Pending</span>';
+    const gst2bBadge = d['GST2B']
+      ?`<span class="badge ${d['GST2B']==='Matched'?'badge-green':d['GST2B']==='Mismatch'?'badge-red':'badge-grey'}">${d['GST2B']}</span>`:'—';
+    const invLink=d['Invoice Link']?`<a href="${d['Invoice Link']}" target="_blank" style="color:var(--blue);font-size:11px">📄 View</a>`:'—';
+    return`<tr>
+      <td style="font-weight:600">${d['Invoice No']||'—'}</td>
+      <td style="white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${d['Vendor Name']}">${d['Vendor Name']||'—'}</td>
+      <td><span class="badge badge-grey" style="font-size:9px">${d['Invoice Type']||'—'}</span></td>
+      <td style="white-space:nowrap">${d['Invoice Date']||'—'}</td>
+      <td style="white-space:nowrap;${isOverdue?'color:var(--red);font-weight:700':isDueSoon?'color:var(--orange);font-weight:700':''}">${d['Due Date']||'—'}</td>
+      <td style="text-align:right">${cur(d['Base Amount'])}</td>
+      <td style="text-align:right;font-size:11px;color:var(--mu)">${cur((parseFloat(d['CGST'])||0)+(parseFloat(d['SGST'])||0)+(parseFloat(d['IGST'])||0))}</td>
+      <td style="text-align:right">${cur(d['Invoice Total'])}</td>
+      <td style="text-align:right;font-weight:700">${cur(d['Net Payable'])}</td>
+      <td>${statusBadge}</td><td>${gst2bBadge}</td><td>${invLink}</td>
+      <td><button class="btn btn-sm" style="color:var(--red);border-color:currentColor;background:transparent;font-size:10px"
+        onclick="deleteInvoice('${d['Invoice ID']}','${d['Invoice No']}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteInvoice(id, no){
+  if(!confirm(`Delete invoice ${no}?`))return;
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:'deleteInvoice',invoiceId:id});
+    if(res.status==='ok'){toast('Invoice deleted','#27ae60');await loadVendor();}
+    else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Delete failed','#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// VENDOR — PAYMENTS
+// ═══════════════════════════════════════════════════════
+function renderPayments(){
+  const data=[...PAYMENTS].sort((a,b)=>String(b['Payment Date']).localeCompare(String(a['Payment Date'])));
+  const tbody=document.querySelector('#tPay tbody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="8" class="empty">No payments recorded</td></tr>';return;}
+  tbody.innerHTML=data.map(d=>`<tr>
+    <td style="white-space:nowrap;font-weight:500">${fmtD(d['Payment Date'])}</td>
+    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d['Vendor Name']||'—'}</td>
+    <td style="font-weight:700;color:var(--green)">${cur(d['Amount'])}</td>
+    <td>${d['Payment Method']||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${d['Reference No']||'—'}</td>
+    <td style="font-size:11px;color:var(--mu);max-width:120px;overflow:hidden;text-overflow:ellipsis">${d['Invoice IDs']||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${d['Note']||'—'}</td>
+    <td><button class="btn btn-sm" style="color:var(--red);border-color:currentColor;background:transparent;font-size:10px"
+      onclick="deletePayment('${d['Payment ID']}')">🗑</button></td>
+  </tr>`).join('');
+}
+
+async function deletePayment(id){
+  if(!confirm('Delete this payment record?'))return;
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:'deletePayment',paymentId:id});
+    if(res.status==='ok'){toast('Payment deleted','#27ae60');await loadVendor();}
+    else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Delete failed','#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// VENDOR — OUTSTANDING DASHBOARD
+// ═══════════════════════════════════════════════════════
+async function loadOutstanding(){
+  if(!CFG.vendorUrl)return;
+  try{
+    const res=await gsGet(CFG.vendorUrl,'action=outstanding');
+    OUTSTANDING=res.outstanding||[];
+    const t=res.totals||{};
+    sv('vkTotal',cur(t.total||0));
+    sv('vkOverdue',cur(t.overdue||0));
+    sv('vkSoon',cur(t.dueSoon||0));
+    sv('vkVendors',OUTSTANDING.length);
+    renderOutstanding();
+  }catch(e){toast('Outstanding load failed','#c0392b');}
+}
+function renderOutstanding(){
+  const tbody=document.querySelector('#tOut tbody');
+  if(!OUTSTANDING.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No outstanding invoices</td></tr>';return;}
+  tbody.innerHTML=OUTSTANDING.map(v=>`<tr>
+    <td style="font-weight:700">${v.vendorName}</td>
+    <td style="text-align:right;font-weight:700">${cur(v.total)}</td>
+    <td style="text-align:right;${v.overdue>0?'color:var(--red);font-weight:700':''}">${cur(v.overdue)}</td>
+    <td style="text-align:right;${v.dueSoon>0?'color:var(--orange);font-weight:700':''}">${cur(v.dueSoon)}</td>
+    <td style="font-size:11px;color:var(--mu)">${v.invoices.length} bill${v.invoices.length!==1?'s':''}</td>
+    <td><button class="btn btn-sm btn-g" style="font-size:10px"
+      onclick="quickPay('${v.gstin}','${v.vendorName}')">Pay</button></td>
+  </tr>`).join('');
+}
+function quickPay(gstin, name){
+  activateSubTab('vendor-payments');
+  openPaymentModal();
+  setTimeout(()=>{
+    document.getElementById('pVendor').value=gstin;
+    loadVendorOutstanding();
+  },100);
+}
+
+// ═══════════════════════════════════════════════════════
+// ADMIN — VENDOR MASTER
+// ═══════════════════════════════════════════════════════
+function renderVendors(){
+  const tbody=document.querySelector('#tVendors tbody');
+  if(!VENDORS.length){tbody.innerHTML='<tr><td colspan="7" class="empty">No vendors in master</td></tr>';return;}
+  tbody.innerHTML=VENDORS.map(v=>`<tr>
+    <td style="font-family:monospace;font-size:11px">${v.GSTIN}</td>
+    <td style="font-weight:600">${v['Vendor Name']}</td>
+    <td><span class="badge badge-grey" style="font-size:9px">${v.Category||'—'}</span></td>
+    <td style="text-align:center">${v['Credit Days']||45} days</td>
+    <td>${v.Active==='YES'?'<span class="badge badge-green">Active</span>':'<span class="badge badge-red">Inactive</span>'}</td>
+    <td style="font-size:11px;color:var(--mu)">${v['Created On']||'—'}</td>
+    <td><button class="btn btn-sm btn-b" style="font-size:10px" onclick="editVendor('${v.GSTIN}')">Edit</button></td>
+  </tr>`).join('');
+}
+
+function openVendorModal(gstin){
+  document.getElementById('vendorModalTitle').textContent = gstin ? 'Edit Vendor' : 'Add Vendor';
+  if(gstin){
+    const v=VENDORS.find(x=>x.GSTIN===gstin);
+    if(v){
+      document.getElementById('vGstin').value=v.GSTIN;
+      document.getElementById('vGstin').readOnly=true;
+      document.getElementById('vName').value=v['Vendor Name'];
+      document.getElementById('vShort').value=v['Short Name']||'';
+      document.getElementById('vCategory').value=v['Category']||'GST Purchase';
+      document.getElementById('vCredit').value=v['Credit Days']||45;
+      document.getElementById('vActive').value=v['Active']||'YES';
+      document.getElementById('vAddress').value=v['Address']||'';
+    }
+  } else {
+    document.getElementById('vGstin').readOnly=false;
+    ['vGstin','vName','vShort','vAddress'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('vCredit').value=45;
+    document.getElementById('vActive').value='YES';
+  }
+  openModal('vendorModal');
+}
+function editVendor(gstin){ openVendorModal(gstin); }
+
+async function saveVendorForm(){
+  const gstin=document.getElementById('vGstin').value.trim().toUpperCase();
+  const name=document.getElementById('vName').value.trim().toUpperCase();
+  if(!gstin||!name){toast('GSTIN and Vendor Name required','#c0392b');return;}
+  const data={gstin,vendorName:name,shortName:document.getElementById('vShort').value.trim(),
+    address:document.getElementById('vAddress').value.trim(),
+    creditDays:parseInt(document.getElementById('vCredit').value)||45,
+    category:document.getElementById('vCategory').value,
+    active:document.getElementById('vActive').value};
+  const isEdit=document.getElementById('vGstin').readOnly;
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:isEdit?'updateVendor':'saveVendor',data});
+    if(res.status==='ok'){
+      toast(isEdit?'Vendor updated':'Vendor created','#27ae60');
+      closeModal('vendorModal');await loadVendor();
+    } else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Save failed','#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// INVOICE MODAL
+// ═══════════════════════════════════════════════════════
+function openInvoiceModal(){
+  ['iGstin','iVendorName','iNo','iLink','iPo','iNote'].forEach(id=>document.getElementById(id).value='');
+  ['iBase','iCgst','iSgst','iIgst','iTotal','iNet'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('iDate').value=todayStr();
+  document.getElementById('iDue').value='';
+  document.getElementById('iVendorLookup').textContent='';
+  openModal('invoiceModal');
+}
+
+function lookupVendor(gstin){
+  if(gstin.length<15)return;
+  const v=VENDORS.find(x=>x.GSTIN===gstin.trim().toUpperCase());
+  if(v){
+    document.getElementById('iVendorName').value=v['Vendor Name'];
+    document.getElementById('iVendorLookup').textContent='✓ '+v['Vendor Name'];
+    calcDueDate(v['Credit Days']);
+  } else {
+    document.getElementById('iVendorLookup').textContent='New vendor — will be auto-created';
+    document.getElementById('iVendorLookup').style.color='var(--orange)';
+  }
+}
+
+function calcDueDate(creditDays){
+  const dt=document.getElementById('iDate').value;
+  if(!dt)return;
+  const gstin=document.getElementById('iGstin').value.trim().toUpperCase();
+  const v=VENDORS.find(x=>x.GSTIN===gstin);
+  const days=creditDays||v?.['Credit Days']||45;
+  document.getElementById('iDue').value=addDaysStr(dt,days);
+}
+
+function calcInvTotal(){
+  const b=parseFloat(document.getElementById('iBase').value)||0;
+  const c=parseFloat(document.getElementById('iCgst').value)||0;
+  const s=parseFloat(document.getElementById('iSgst').value)||0;
+  const i=parseFloat(document.getElementById('iIgst').value)||0;
+  const total=b+c+s+i;
+  document.getElementById('iTotal').value=total.toFixed(2);
+  document.getElementById('iNet').value=total.toFixed(2);
+}
+
+async function saveInvoiceForm(){
+  const gstin=document.getElementById('iGstin').value.trim().toUpperCase();
+  const vname=document.getElementById('iVendorName').value.trim().toUpperCase();
+  const invNo=document.getElementById('iNo').value.trim();
+  if(!gstin||!vname||!invNo){toast('GSTIN, Vendor Name and Invoice No required','#c0392b');return;}
+  const data={
+    gstin,vendorName:vname,invoiceType:document.getElementById('iType').value,
+    invoiceNo:invNo,invoiceDate:document.getElementById('iDate').value,
+    dueDate:document.getElementById('iDue').value,
+    baseAmount:parseFloat(document.getElementById('iBase').value)||0,
+    cgst:parseFloat(document.getElementById('iCgst').value)||0,
+    sgst:parseFloat(document.getElementById('iSgst').value)||0,
+    igst:parseFloat(document.getElementById('iIgst').value)||0,
+    invoiceTotal:parseFloat(document.getElementById('iTotal').value)||0,
+    tds:document.getElementById('iTds').value,
+    netPayable:parseFloat(document.getElementById('iNet').value)||0,
+    gst2b:document.getElementById('iGst2b').value,
+    invoiceLink:document.getElementById('iLink').value.trim(),
+    poLink:document.getElementById('iPo').value.trim(),
+    note:document.getElementById('iNote').value.trim(),
+    createdBy:SESSION?.username||''
+  };
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:'saveInvoice',data});
+    if(res.status==='ok'){
+      toast('Invoice saved'+(res.vendorCreated?' (new vendor auto-created)':''),'#27ae60');
+      closeModal('invoiceModal');await loadVendor();
+    } else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Save failed','#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// PAYMENT MODAL
+// ═══════════════════════════════════════════════════════
+function openPaymentModal(){
+  document.getElementById('pVendor').value='';
+  document.getElementById('pDate').value=todayStr();
+  document.getElementById('pAmount').value='';
+  document.getElementById('pRef').value='';
+  document.getElementById('pNote').value='';
+  document.getElementById('pendingInvoicesArea').innerHTML=
+    '<div class="empty" style="padding:16px">Select a vendor to see pending invoices</div>';
+  openModal('paymentModal');
+}
+
+function loadVendorOutstanding(){
+  const gstin=document.getElementById('pVendor').value;
+  if(!gstin){
+    document.getElementById('pendingInvoicesArea').innerHTML=
+      '<div class="empty" style="padding:16px">Select a vendor</div>';
+    return;
+  }
+  const today=todayStr();
+  const pending=INVOICES.filter(inv=>
+    inv['GSTIN']===gstin&&!String(inv['Status']).toLowerCase().includes('paid')
+  ).sort((a,b)=>a['Due Date'].localeCompare(b['Due Date']));
+
+  if(!pending.length){
+    document.getElementById('pendingInvoicesArea').innerHTML=
+      '<div class="empty" style="padding:12px;color:var(--green)">✓ No pending invoices for this vendor</div>';
+    return;
+  }
+
+  document.getElementById('pendingInvoicesArea').innerHTML=`
+    <div class="tbl-w" style="max-height:200px">
+    <table class="dt">
+      <thead><tr>
+        <th style="width:32px"><input type="checkbox" onchange="toggleAllInv(this)"></th>
+        <th>Invoice No</th><th>Date</th><th>Due Date</th>
+        <th style="text-align:right">Net Payable</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${pending.map(inv=>{
+          const overdue=inv['Due Date']<today;
+          return`<tr>
+            <td><input type="checkbox" class="inv-chk" value="${inv['Invoice ID']}" data-net="${inv['Net Payable']}"></td>
+            <td style="font-weight:600">${inv['Invoice No']}</td>
+            <td>${inv['Invoice Date']}</td>
+            <td style="${overdue?'color:var(--red);font-weight:700':''}">${inv['Due Date']}</td>
+            <td style="text-align:right;font-weight:700">${cur(inv['Net Payable'])}</td>
+            <td>${overdue?'<span class="badge badge-red">Overdue</span>':'<span class="badge badge-blue">Pending</span>'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--mu)">
+      ✓ Check invoices covered by this payment. Checked invoices will be marked as Paid.
+    </div>`;
+}
+
+function toggleAllInv(chk){
+  document.querySelectorAll('.inv-chk').forEach(c=>c.checked=chk.checked);
+}
+
+async function savePaymentForm(){
+  const gstin=document.getElementById('pVendor').value;
+  if(!gstin){toast('Select a vendor','#c0392b');return;}
+  const amount=parseFloat(document.getElementById('pAmount').value)||0;
+  if(!amount){toast('Enter payment amount','#c0392b');return;}
+  const vendor=VENDORS.find(v=>v.GSTIN===gstin);
+  const invoiceIds=[...document.querySelectorAll('.inv-chk:checked')].map(c=>c.value);
+  const data={
+    gstin,vendorName:vendor?.['Vendor Name']||gstin,
+    paymentDate:document.getElementById('pDate').value,
+    amount,paymentMethod:document.getElementById('pMethod').value,
+    referenceNo:document.getElementById('pRef').value.trim(),
+    invoiceIds,note:document.getElementById('pNote').value.trim(),
+    createdBy:SESSION?.username||''
+  };
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:'savePayment',data});
+    if(res.status==='ok'){
+      toast(`Payment recorded${invoiceIds.length?' · '+invoiceIds.length+' invoice(s) marked Paid':''}`, '#27ae60');
+      closeModal('paymentModal');await loadVendor();
+    } else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Save failed','#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// TALLY IMPORT
+// ═══════════════════════════════════════════════════════
+function openImportModal(){addImportRow();openModal('importModal');}
+
+function addImportRow(){
+  const tbody=document.getElementById('importBody');
+  const i=tbody.rows.length+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="text-align:center;color:var(--mu);font-size:10px;background:var(--xl-hdr)">${i}</td>
+    ${['text','text','text','text','date','number','number','number','number','number','number'].map((t,j)=>
+      `<td><input type="${t}" class="vi-inp${[5,6,7,8,9,10].includes(j)?` num`:''}"
+        style="text-transform:${j<4?'uppercase':'none'}"
+        oninput="${j<4?'this.value=this.value.toUpperCase()':''}" placeholder=""></td>`
+    ).join('')}`;
+  tbody.appendChild(tr);
+}
+
+function clearImportRows(){
+  document.getElementById('importBody').innerHTML='';
+  for(let i=0;i<5;i++)addImportRow();
+  document.getElementById('importNote').textContent='';
+}
+
+async function submitImport(){
+  const rows=[...document.getElementById('importBody').rows];
+  const records=[];
+  rows.forEach(tr=>{
+    const inputs=[...tr.querySelectorAll('input')];
+    const gstin=inputs[0]?.value.trim().toUpperCase();
+    const vname=inputs[1]?.value.trim().toUpperCase();
+    const invNo=inputs[3]?.value.trim();
+    if(!gstin||!vname||!invNo)return;
+    records.push({
+      gstin,vendorName:vname,invoiceType:inputs[2]?.value.trim()||'GST Purchase',
+      invoiceNo:invNo,invoiceDate:inputs[4]?.value,
+      baseAmount:parseFloat(inputs[5]?.value)||0,
+      cgst:parseFloat(inputs[6]?.value)||0,
+      sgst:parseFloat(inputs[7]?.value)||0,
+      igst:parseFloat(inputs[8]?.value)||0,
+      invoiceTotal:parseFloat(inputs[9]?.value)||0,
+      netPayable:parseFloat(inputs[10]?.value)||0,
+    });
+  });
+  if(!records.length){toast('Fill at least one complete row','#c0392b');return;}
+  try{
+    const res=await gsPost(CFG.vendorUrl,{action:'importInvoices',records,user:SESSION?.username||''});
+    if(res.status==='ok'){
+      document.getElementById('importNote').textContent=
+        `✓ Added: ${res.added} | Skipped (dup): ${res.skipped} | New vendors: ${res.vendorsCreated}`;
+      toast(`Imported: ${res.added} invoices`+(res.skipped?`, ${res.skipped} skipped`:''),'#27ae60');
+      await loadVendor();
+      if(res.added>0)clearImportRows();
+    }else toast('Error: '+res.message,'#c0392b');
+  }catch(e){toast('Import failed: '+e.message,'#c0392b');}
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+function openSettings(){ activateModule('admin');activateSubTab('admin-settings'); }
+function saveSettings(){
+  CFG.prodUrl=document.getElementById('sProdUrl').value.trim();
+  CFG.vendorUrl=document.getElementById('sVendorUrl').value.trim();
+  localStorage.setItem('jaycoCfg',JSON.stringify(CFG));
+  toast('Settings saved — reconnecting…','#27ae60');
+  setTimeout(()=>location.reload(),800);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('overlay'))e.target.classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function stageColor(s){
+  const m={'1 (bottom)':'#2980b9','1 (cap)':'#0e6655','2 (drill)':'#1e8449',
+    '3 (berrings)':'#b7950b','4 ( grinding)':'#c0392b','5 ( inspection)':'#7d3c98',
+    '6 (paint)':'#ca6f1e','ring':'#a04000'};
+  return m[(s||'').toLowerCase().trim()]||'#718096';
+}
+function esc(s){return s.replace(/[&"<>]/g,c=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'}[c]));}
+function eid(s){return s.replace(/[^a-zA-Z0-9]/g,'_');}
+function v(id){return document.getElementById(id)?.value||'';}
+function sv(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
+function n(val){return Number(val).toLocaleString('en-IN');}
+function cur(val){return '₹'+Number(val||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function pct(v,t){return t?Math.round(v/t*100)+'%':'0%';}
+function fmtD(s){
+  if(!s)return'';
+  const d=new Date(s);
+  if(isNaN(d))return String(s).slice(0,10);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function addDaysStr(dateStr,days){
+  const d=new Date(dateStr);d.setDate(d.getDate()+Number(days));
+  return d.toISOString().slice(0,10);
+}
+function pop(id,arr,lFn){
+  const sel=document.getElementById(id);if(!sel)return;
+  const cur=sel.value;
+  while(sel.options.length>1)sel.remove(1);
+  arr.forEach(vl=>{const o=document.createElement('option');o.value=vl;o.text=lFn?lFn(vl):vl;sel.appendChild(o);});
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+function setBtnState(id,enabled,text){
+  const b=document.getElementById(id);
+  if(b){b.disabled=!enabled;b.textContent=text;}
+}
+function updateBadge(state){
+  const dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLbl');
+  if(state==='loading'){dot.className='dot warn';lbl.textContent='Syncing…';return;}
+  if(state==='err'){dot.className='dot err';lbl.textContent='Error';return;}
+  dot.className='dot';lbl.textContent='Connected';
+}
+function cOpts(){return{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a202c',borderColor:'#e2e8f0',
+    borderWidth:1,titleColor:'#fff',bodyColor:'#a0aec0',
+    callbacks:{label:c=>` ${n(c.raw)} units`}}},
+  scales:{x:{grid:{color:'rgba(226,232,240,.9)'},ticks:{color:'#718096',font:{size:10}}},
+          y:{grid:{color:'rgba(226,232,240,.9)'},ticks:{color:'#718096',font:{size:10}}}}};}
+function toast(msg,color='#27ae60'){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span> ${msg}`;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+
+<!-- LOGIN CONFIG MODAL -->
+<div class="overlay" id="loginCfgModal">
+  <div class="modal">
+    <h3>⚙ API Configuration
+      <button class="modal-close" onclick="document.getElementById('loginCfgModal').classList.remove('open')">✕</button>
+    </h3>
+    <div style="background:#f0f9ff;border:1px solid #bee3f8;border-radius:8px;padding:12px;font-size:12px;color:#2c5282;margin-bottom:14px;line-height:1.7">
+      Paste your Google Apps Script deployment URLs below.<br>
+      These are saved in your browser only.
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Production Apps Script URL</label>
+      <input id="sProdUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="field-note">From your Jayco Production Google Sheet</div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Vendor Apps Script URL</label>
+      <input id="sVendorUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="field-note">From your Jayco Vendor Google Sheet</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="document.getElementById('loginCfgModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-g" onclick="saveLoginConfig()">💾 Save Settings</button>
+    </div>
+  </div>
+</div>
+function openLoginConfig(){  document.getElementById('sProdUrl').value=CFG.prodUrl||'';  document.getElementById('sVendorUrl').value=CFG.vendorUrl||'';  document.getElementById('loginCfgModal').classList.add('open');}function saveLoginConfig(){  CFG.prodUrl=document.getElementById('sProdUrl').value.trim();  CFG.vendorUrl=document.getElementById('sVendorUrl').value.trim();  localStorage.setItem('jaycoCfg',JSON.stringify(CFG));  document.getElementById('loginCfgModal').classList.remove('open');  document.getElementById('loginErr').textContent='';  showLoginErr('');  alert('Settings saved. You can now log in.');}
+</body>
+</html>
