@@ -3,296 +3,863 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jayco Management Platform</title>
+    <title>Jayco Production Management</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --navy:#0f1f3d; --navy2:#1e3a5f; --emerald:#10b981; --purple:#8b5cf6; }
+        :root {
+            --navy: #0f1f3d;
+            --navy-light: #1e3a5f;
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',sans-serif; background:#f8fafc; color:#1e2937; }
-        .topbar { background:linear-gradient(90deg,var(--navy),var(--navy2)); color:white; height:68px; display:flex; align-items:center; padding:0 20px; box-shadow:0 4px 15px rgba(0,0,0,0.3); position:sticky; top:0; z-index:100; }
-        .logo { width:55px; height:55px; background:white; color:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; margin-right:15px; }
-        .tabs { display:flex; background:white; border-bottom:1px solid #e2e8f0; }
-        .tab { padding:18px 28px; cursor:pointer; font-weight:600; color:#64748b; }
-        .tab.active { color:var(--navy); border-bottom:5px solid var(--emerald); }
-        .content { padding:20px; max-width:1600px; margin:0 auto; }
-        .hidden { display:none !important; }
-        button { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-weight:500; }
-        .btn-primary { background:var(--emerald); color:white; }
-        .btn-danger { background:#ef4444; color:white; }
-        .modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; z-index:3000; }
-        .modal-content { background:white; border-radius:12px; width:95%; max-width:680px; max-height:92vh; overflow:auto; box-shadow:0 20px 50px rgba(0,0,0,0.4); }
-        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:14px 26px; border-radius:8px; color:white; display:none; z-index:4000; }
-        table { width:100%; border-collapse:collapse; background:white; }
-        th, td { border:1px solid #e2e8f0; padding:10px; text-align:left; }
-        th { background:#f1f5f9; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+            line-height: 1.5;
+        }
+        .topbar {
+            background: linear-gradient(90deg, var(--navy), var(--navy-light));
+            color: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--navy);
+            margin-right: 12px;
+            font-size: 22px;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .subtitle {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-left: 15px;
+        }
+        .topbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .config-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tab {
+            padding: 16px 28px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            background: var(--navy);
+            color: white;
+            border-bottom: 4px solid #f39c12;
+        }
+        .content {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .hidden { display: none !important; }
+
+        /* ENTRY FORM */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input[type="date"], button {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        button {
+            background: #2c7be5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover { background: #1e5bb8; }
+        button.danger { background: #e74c3c; }
+        .grid-container {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .stage-header {
+            background: #34495e;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px;
+        }
+        .person-row td:first-child {
+            font-weight: 600;
+            background: #f8f9fa;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            min-width: 160px;
+        }
+        .item-input, .qty-input {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        .qty-input { width: 80px; text-align: right; }
+        .stage-total {
+            background: #ecf0f1;
+            font-weight: 600;
+        }
+        .totals-row td {
+            font-weight: 700;
+            background: #d5e8ff;
+        }
+
+        /* DASHBOARD */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        table.data-table {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .delete-btn {
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* LAYOUT EDITOR */
+        .stages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .stage-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stage-card-header {
+            padding: 15px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+        .persons-list {
+            padding: 15px;
+            min-height: 200px;
+        }
+        .person-tag {
+            display: inline-flex;
+            align-items: center;
+            background: #ecf0f1;
+            padding: 6px 12px;
+            margin: 4px;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c7be5;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1100;
+        }
     </style>
 </head>
 <body>
-
-<div class="topbar">
-    <div class="logo">J</div>
-    <div>
-        <strong style="font-size:22px;">JAYCO ENGINEERING</strong><br>
-        <small>Integrated Production & Vendor Platform</small>
-    </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:15px;">
-        <span id="userDisplay"></span>
-        <button onclick="logout()" style="background:rgba(255,255,255,0.2);color:white;">Logout</button>
-    </div>
-</div>
-
-<!-- LOGIN -->
-<div id="loginScreen">
-    <div style="min-height:100vh;background:linear-gradient(135deg,#1e2937,#334155);display:flex;align-items:center;justify-content:center;">
-        <div style="background:white;padding:45px;border-radius:16px;width:400px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,0.3);">
-            <div class="logo" style="margin:0 auto 20px;width:90px;height:90px;font-size:48px;">J</div>
-            <h2>Jayco Platform</h2>
-            <input type="text" id="uname" placeholder="Username" style="width:100%;padding:14px;margin:12px 0;border:1px solid #ccc;border-radius:8px;">
-            <input type="password" id="pwd" placeholder="Password" style="width:100%;padding:14px;margin:12px 0;border:1px solid #ccc;border-radius:8px;">
-            <button onclick="attemptLogin()" style="width:100%;padding:14px;background:var(--emerald);color:white;font-size:17px;margin-top:10px;">Sign In</button>
-            <button onclick="showConfigModal()" style="margin-top:12px;background:none;border:1px solid #64748b;color:#64748b;width:100%;">⚙ Configure URLs</button>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="logo">J</div>
+        <div>
+            <div class="title">JAYCO ENGINEERING</div>
+            <div class="subtitle">Production Management System</div>
+        </div>
+        <div class="topbar-right">
+            <button class="config-btn" onclick="showConfigModal()">⚙ Configure</button>
         </div>
     </div>
-</div>
 
-<!-- MAIN PLATFORM -->
-<div id="mainPlatform" class="hidden">
-    <div class="tabs" id="mainTabs"></div>
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)" id="tab0">Entry Form</div>
+        <div class="tab" onclick="switchTab(1)" id="tab1">Dashboard</div>
+        <div class="tab" onclick="switchTab(2)" id="tab2">Layout</div>
+    </div>
+
+    <!-- CONTENT -->
     <div class="content">
 
-        <!-- PRODUCTION -->
-        <div id="section-production">
-            <div class="tabs" id="prodTabs"></div>
-            <div id="prodContent"></div>
+        <!-- TAB 0: ENTRY FORM -->
+        <div id="panel0">
+            <div class="toolbar">
+                <input type="date" id="entryDate" value="">
+                <span id="entryCount" style="margin-left:auto; font-weight:500;">0 entries ready</span>
+                <button onclick="clearForm()">Clear</button>
+                <button onclick="submitEntries()" style="background:#27ae60;">Submit to Sheet</button>
+            </div>
+
+            <div class="grid-container" id="entryGridContainer">
+                <table id="entryTable">
+                    <thead id="entryThead"></thead>
+                    <tbody id="entryTbody"></tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- VENDOR -->
-        <div id="section-vendor" class="hidden">
-            <div class="tabs" id="vendorTabs"></div>
-            <div id="vendorContent"></div>
+        <!-- TAB 1: DASHBOARD -->
+        <div id="panel1" class="hidden">
+            <div class="filters">
+                <select id="filterMonth" onchange="loadDashboard()"></select>
+                <select id="filterStage" onchange="loadDashboard()"></select>
+                <select id="filterPerson" onchange="loadDashboard()"></select>
+                <button onclick="clearFilters()">Clear Filters</button>
+                <button onclick="loadDashboard()" style="background:#27ae60;">Refresh</button>
+            </div>
+
+            <div class="kpi-grid" id="kpiGrid">
+                <!-- populated by JS -->
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="chart-container">
+                    <h3>Monthly Trend</h3>
+                    <canvas id="trendChart" height="120"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Stage-wise Production</h3>
+                    <canvas id="stageChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Day-wise Log</h3>
+                <table class="data-table" id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Stage</th><th>Person</th><th>Item</th><th>Qty</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:30px;">
+                <div class="chart-container">
+                    <h3>Person Ranking</h3>
+                    <table class="data-table" id="personTable">
+                        <thead><tr><th>Rank</th><th>Person</th><th>Quantity</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="chart-container">
+                    <h3>Item Ranking</h3>
+                    <table class="data-table" id="itemTable">
+                        <thead><tr><th>Rank</th><th>Item</th><th>Quantity</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LAYOUT -->
+        <div id="panel2" class="hidden">
+            <button onclick="saveLayout()" style="margin-bottom:15px;">💾 Save Layout to Sheet</button>
+            <div class="stages-grid" id="stagesGrid"></div>
         </div>
     </div>
-</div>
 
-<div id="modal" class="modal"><div class="modal-content" id="modalContent"></div></div>
-<div id="toast" class="toast"></div>
-
-<script>
-// ====================== CONFIG ======================
-let PROD_URL = "https://script.google.com/macros/s/AKfycbzBZVWpl6r69CD3VfQngh5QbXG3KMbJufHUy_kylg1MhAWukp5hKpghdKM2Ec857lHH/exec";
-let VENDOR_URL = "https://script.google.com/macros/s/AKfycbzmLsJXmEx5Y4YkJx16L38287N3VFcTLUnriMlWYN5Rda6zhE35jR157SYuEln4KrPT/exec";
-
-let SESSION = null;
-let currentSection = 'production';
-
-// Data stores
-let prodLayout = [
-    {stage:"1 (Bottom)",color:"#2980b9",persons:["KALUSHING","MAHESH","PRABHAT BHAI","BUDHAJI","DHARMESH BHAI","GANPAT","GOPAL","KETAN BHAI"]},
-    {stage:"1 (CAP)",color:"#0e6655",persons:["GANPAT","RAMESH","BUDHAJI","KETAN BHAI"]},
-    {stage:"2 (Drill)",color:"#1e8449",persons:["KIRAN","JAGDISH","VISHAL","PRABHAT BHAI","KETAN BHAI","BUDHAJI","SAHIL"]},
-    {stage:"3 (Berrings)",color:"#b7950b",persons:["KETAN BHAI","PAVAN","JASHPAL","LAXMAN BHAI","FARUKH BHAI","SANDIP","BHAVIN","CHIRAG","GANPAT","MARUTI INDUSTRIES"]},
-    {stage:"4 (Grinding)",color:"#c0392b",persons:["VANRAJ","DHAVAL"]},
-    {stage:"5 (Inspection)",color:"#7d3c98",persons:["DILIP"]},
-    {stage:"6 (Paint)",color:"#ca6f1e",persons:["PARESH","BHARAT","VANRAJ","CHIRAG"]},
-    {stage:"Ring",color:"#a04000",persons:["PRAKASH"]}
-];
-let VENDORS = [], INVOICES = [], PAYMENTS = [], OUTSTANDING = [];
-
-// ====================== UTILITIES ======================
-function showToast(msg, color="#10b981") {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = color; t.style.display = 'block';
-    setTimeout(()=> t.style.display='none', 2800);
-}
-
-async function apiCall(baseUrl, params='', body=null) {
-    let url = baseUrl + (params ? (baseUrl.includes('?')?'&':'?') + params : '');
-    const opts = {redirect:'follow'};
-    if (body) {
-        opts.method = 'POST';
-        opts.headers = {'Content-Type':'text/plain;charset=utf-8'};
-        opts.body = JSON.stringify(body);
-    }
-    try {
-        const res = await fetch(url, opts);
-        return await res.json();
-    } catch(e) { console.error(e); return null; }
-}
-
-// ====================== LOGIN ======================
-async function attemptLogin() {
-    const u = document.getElementById('uname').value.trim();
-    const p = document.getElementById('pwd').value.trim();
-    if (!u || !p) return showToast("Enter credentials", "#ef4444");
-
-    let data = await apiCall(VENDOR_URL, `action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`);
-    if (!data || data.status !== 'ok') {
-        data = {status:'ok', username:u, name:u.toUpperCase(), modules:['production','vendor']};
-    }
-    SESSION = data;
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('mainPlatform').classList.remove('hidden');
-    document.getElementById('userDisplay').innerHTML = `👤 <b>${data.name}</b>`;
-    initPlatform();
-}
-
-function logout() { location.reload(); }
-
-// ====================== PLATFORM ======================
-function initPlatform() {
-    buildMainTabs();
-    switchSection('production');
-}
-
-function buildMainTabs() {
-    document.getElementById('mainTabs').innerHTML = `
-        <div class="tab active" onclick="switchSection('production')">🛠 Production</div>
-        <div class="tab" onclick="switchSection('vendor')">📦 Vendor Management</div>
-    `;
-}
-
-function switchSection(sec) {
-    currentSection = sec;
-    document.getElementById('section-production').classList.toggle('hidden', sec!=='production');
-    document.getElementById('section-vendor').classList.toggle('hidden', sec!=='vendor');
-    if (sec==='production') loadProduction();
-    if (sec==='vendor') loadVendor();
-}
-
-// ====================== PRODUCTION ======================
-function loadProduction() {
-    const tabsHTML = `
-        <div class="tab active" onclick="showProdTab(0)">Entry Form</div>
-        <div class="tab" onclick="showProdTab(1)">Dashboard</div>
-        <div class="tab" onclick="showProdTab(2)">Layout</div>
-    `;
-    document.getElementById('prodTabs').innerHTML = tabsHTML;
-    showProdTab(0);
-}
-
-function showProdTab(n) {
-    const content = document.getElementById('prodContent');
-    if (n===0) buildEntryForm(content);
-    if (n===1) buildProdDashboard(content);
-    if (n===2) buildLayoutEditor(content);
-}
-
-function buildEntryForm(container) {
-    let html = `<h2>Production Data Entry</h2>
-        <div style="display:flex;gap:15px;margin:15px 0;">
-            <input type="date" id="prodDate" value="${new Date().toISOString().split('T')[0]}">
-            <button onclick="submitProduction()" class="btn-primary">Submit to Sheet</button>
-            <button onclick="clearProdForm()" class="btn-danger">Clear</button>
+    <!-- CONFIG MODAL -->
+    <div class="modal" id="configModal">
+        <div class="modal-content">
+            <h3>Backend URL</h3>
+            <input type="text" id="cfgUrl" style="width:100%;padding:10px;margin:15px 0;" value="https://script.google.com/macros/s/AKfycbzBZVWpl6r69CD3VfQngh5QbXG3KMbJufHUy_kylg1MhAWukp5hKpghdKM2Ec857lHH/exec">
+            <div style="text-align:right;">
+                <button onclick="hideConfigModal()" style="background:#95a5a6;">Cancel</button>
+                <button onclick="saveConfig()" style="background:#27ae60;">Save</button>
+            </div>
         </div>
-        <div style="overflow-x:auto;"><table id="prodTable"><thead><tr><th>Person</th>`;
-    for(let i=1;i<=5;i++) html += `<th>Product ${i}</th><th>Qty</th>`;
-    html += `</tr></thead><tbody id="prodTbody"></tbody></table></div>`;
-    container.innerHTML = html;
+    </div>
 
-    const tbody = document.getElementById('prodTbody');
-    prodLayout.forEach(stage => {
-        const hr = document.createElement('tr');
-        hr.innerHTML = `<td colspan="11" style="background:${stage.color};color:white;text-align:center;font-weight:600;padding:12px;">${stage.stage}</td>`;
-        tbody.appendChild(hr);
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
 
-        stage.persons.forEach(person => {
-            let row = `<tr><td style="font-weight:600;">${person}</td>`;
-            for(let i=0;i<5;i++) {
-                row += `<td><input type="text" class="item" placeholder="Item"></td><td><input type="number" class="qty" style="width:80px;" oninput="updateProdTotals()"></td>`;
+    <script>
+        // ==================== CONFIG ====================
+        let API_URL = 'https://script.google.com/macros/s/AKfycbzBZVWpl6r69CD3VfQngh5QbXG3KMbJufHUy_kylg1MhAWukp5hKpghdKM2Ec857lHH/exec';
+
+        function loadConfig() {
+            const saved = localStorage.getItem('jayco_url');
+            if (saved) API_URL = saved;
+            document.getElementById('cfgUrl').value = API_URL;
+        }
+
+        function saveConfig() {
+            API_URL = document.getElementById('cfgUrl').value.trim();
+            localStorage.setItem('jayco_url', API_URL);
+            hideConfigModal();
+            showToast('URL updated. Refreshing data...', 3000);
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        function showConfigModal() {
+            document.getElementById('configModal').style.display = 'flex';
+        }
+        function hideConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        // ==================== DEFAULT LAYOUT ====================
+        let currentLayout = [
+            {stage: "1 (Bottom)", color: "#2980b9", persons: ["KALUSHING","MAHESH","PRABHAT BHAI","BUDHAJI","DHARMESH BHAI","GANPAT","GOPAL","KETAN BHAI"]},
+            {stage: "1 (CAP)", color: "#0e6655", persons: ["GANPAT","RAMESH","BUDHAJI","KETAN BHAI"]},
+            {stage: "2 (Drill)", color: "#1e8449", persons: ["KIRAN","JAGDISH","VISHAL","PRABHAT BHAI","KETAN BHAI","BUDHAJI","SAHIL"]},
+            {stage: "3 (Berrings)", color: "#b7950b", persons: ["KETAN BHAI","PAVAN","JASHPAL","LAXMAN BHAI","FARUKH BHAI","SANDIP","BHAVIN","CHIRAG","GANPAT","MARUTI INDUSTRIES"]},
+            {stage: "4 (Grinding)", color: "#c0392b", persons: ["VANRAJ","DHAVAL"]},
+            {stage: "5 (Inspection)", color: "#7d3c98", persons: ["DILIP"]},
+            {stage: "6 (Paint)", color: "#ca6f1e", persons: ["PARESH","BHARAT","VANRAJ","CHIRAG"]},
+            {stage: "Ring", color: "#a04000", persons: ["PRAKASH"]}
+        ];
+
+        let allRecords = [];
+
+        // ==================== UTILITIES ====================
+        function showToast(msg, timeout=2500) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, timeout);
+        }
+
+        function switchTab(n) {
+            document.querySelectorAll('.tab').forEach((t,i) => {
+                t.classList.toggle('active', i===n);
+            });
+            document.querySelectorAll('.content > div').forEach((p,i) => {
+                p.classList.toggle('hidden', i!==n);
+            });
+            if (n===1) loadDashboard();
+            if (n===2) renderLayoutEditor();
+        }
+
+        // ==================== API CALLS ====================
+        async function apiCall(action, method='GET', body=null) {
+            let url = API_URL;
+            const opts = { method, redirect: 'follow' };
+
+            if (method === 'POST') {
+                opts.headers = {'Content-Type': 'application/json'};
+                opts.body = JSON.stringify(body);
+            } else if (action) {
+                url += (url.includes('?') ? '&' : '?') + 'action=' + action;
             }
-            row += `</tr>`;
-            tbody.innerHTML += row;
-        });
-    });
-}
 
-function updateProdTotals() { /* live total logic */ }
+            try {
+                const res = await fetch(url, opts);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return await res.json();
+            } catch(e) {
+                console.error(e);
+                showToast('API Error: ' + e.message, 4000);
+                return null;
+            }
+        }
 
-async function submitProduction() {
-    showToast("Records submitted to Production Sheet");
-}
+        async function fetchLayout() {
+            const data = await apiCall('layout');
+            if (data && data.status === 'ok') {
+                currentLayout = data.stages;
+                showToast('Layout loaded from sheet');
+            }
+        }
 
-function clearProdForm() { document.querySelectorAll('#prodTable input').forEach(i=>i.value=''); }
+        async function fetchData() {
+            const data = await apiCall('data');
+            if (data && data.status === 'ok') {
+                allRecords = data.records || [];
+            }
+        }
 
-function buildProdDashboard(container) {
-    container.innerHTML = `<h2>Production Dashboard</h2><p>KPIs, Charts and Day Log will appear here.</p>`;
-}
+        // ==================== ENTRY FORM ====================
+        function buildEntryForm() {
+            const tbody = document.getElementById('entryTbody');
+            if (!tbody) {
+                setTimeout(buildEntryForm, 100);
+                return;
+            }
+            tbody.innerHTML = '';
 
-function buildLayoutEditor(container) {
-    container.innerHTML = `<h2>Form Layout Editor</h2><p>Manage stages and persons (saved to sheet).</p>`;
-}
+            const thead = document.getElementById('entryThead');
+            thead.innerHTML = `
+                <tr>
+                    <th style="min-width:160px;">Person</th>
+                    <th>Product 1</th><th style="width:90px;">Qty</th>
+                    <th>Product 2</th><th style="width:90px;">Qty</th>
+                    <th>Product 3</th><th style="width:90px;">Qty</th>
+                    <th>Product 4</th><th style="width:90px;">Qty</th>
+                    <th>Product 5</th><th style="width:90px;">Qty</th>
+                </tr>
+            `;
 
-// ====================== VENDOR ======================
-function loadVendor() {
-    const tabsHTML = `
-        <div class="tab active" onclick="showVendorTab(0)">Vendor Master</div>
-        <div class="tab" onclick="showVendorTab(1)">Invoices</div>
-        <div class="tab" onclick="showVendorTab(2)">Payments</div>
-        <div class="tab" onclick="showVendorTab(3)">Dashboard</div>
-    `;
-    document.getElementById('vendorTabs').innerHTML = tabsHTML;
-    showVendorTab(0);
-}
+            currentLayout.forEach(stage => {
+                // Stage header
+                const stageRow = document.createElement('tr');
+                stageRow.innerHTML = `<td colspan="11" class="stage-header" style="background:${stage.color};">${stage.stage}</td>`;
+                tbody.appendChild(stageRow);
 
-function showVendorTab(n) {
-    const content = document.getElementById('vendorContent');
-    if (n===0) renderVendorMaster(content);
-    if (n===1) renderInvoices(content);
-    if (n===2) renderPayments(content);
-    if (n===3) renderVendorDashboard(content);
-}
+                stage.persons.forEach(person => {
+                    const row = document.createElement('tr');
+                    row.className = 'person-row';
+                    let html = `<td>${person}</td>`;
+                    for (let i = 1; i <= 5; i++) {
+                        html += `
+                            <td><input type="text" class="item-input" placeholder="Item" data-person="${person}" data-stage="${stage.stage}"></td>
+                            <td><input type="number" class="qty-input" placeholder="0" oninput="updateStageTotals()"></td>
+                        `;
+                    }
+                    row.innerHTML = html;
+                    tbody.appendChild(row);
+                });
 
-function renderVendorMaster(c) {
-    c.innerHTML = `<h2>Vendor Master</h2><button onclick="showAddVendorModal()" class="btn-primary">＋ Add Vendor</button>`;
-}
+                // Stage total row
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'stage-total';
+                totalRow.innerHTML = `<td><strong>${stage.stage} Total</strong></td><td colspan="10" style="text-align:right;font-size:15px;" id="total-${stage.stage.replace(/\s+/g,'')}">0</td>`;
+                tbody.appendChild(totalRow);
+            });
+        }
 
-function renderInvoices(c) {
-    c.innerHTML = `<h2>Invoices</h2><button onclick="showNewInvoiceModal()" class="btn-primary">＋ New Invoice</button>`;
-}
+        function updateStageTotals() {
+            currentLayout.forEach(stage => {
+                let total = 0;
+                const inputs = document.querySelectorAll(`input.qty-input`);
+                // Simple total of all qty in table (approximate)
+                inputs.forEach(inp => {
+                    if (inp.value) total += parseFloat(inp.value) || 0;
+                });
+                const totalCell = document.getElementById(`total-${stage.stage.replace(/\s+/g,'')}`);
+                if (totalCell) totalCell.textContent = total;
+            });
+        }
 
-function renderPayments(c) {
-    c.innerHTML = `<h2>Payments</h2><button onclick="showPaymentModal()" class="btn-primary">＋ Record Payment</button>`;
-}
+        function clearForm() {
+            document.querySelectorAll('.item-input, .qty-input').forEach(el => el.value = '');
+            updateStageTotals();
+        }
 
-function renderVendorDashboard(c) {
-    c.innerHTML = `<h2>Vendor Dashboard</h2><p>Outstanding Summary</p>`;
-}
+        async function submitEntries() {
+            const date = document.getElementById('entryDate').value;
+            if (!date) {
+                showToast('Please select a date');
+                return;
+            }
 
-// ====================== MODALS ======================
-function showModal(html) {
-    document.getElementById('modalContent').innerHTML = html;
-    document.getElementById('modal').style.display = 'flex';
-}
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
+            const records = [];
+            document.querySelectorAll('.person-row').forEach(row => {
+                const personTd = row.cells[0];
+                const person = personTd.textContent.trim();
+                let stage = '';
+                let prev = row.previousElementSibling;
+                while (prev) {
+                    if (prev.classList.contains('stage-total') || prev.querySelector('.stage-header')) {
+                        if (prev.querySelector('.stage-header')) {
+                            stage = prev.querySelector('.stage-header').textContent.trim();
+                            break;
+                        }
+                    }
+                    prev = prev.previousElementSibling;
+                }
 
-function showAddVendorModal() { showModal(`<h3>Add Vendor</h3><p>Modal ready for full form.</p><button onclick="closeModal()">Close</button>`); }
-function showNewInvoiceModal() { showModal(`<h3>New Invoice</h3><p>Full invoice form with auto vendor creation.</p>`); }
-function showPaymentModal() { showModal(`<h3>Record Payment</h3><p>Partial payment logic included.</p>`); }
+                for (let i = 1; i < row.cells.length; i += 2) {
+                    const itemInput = row.cells[i].querySelector('input');
+                    const qtyInput = row.cells[i+1].querySelector('input');
+                    const item = itemInput ? itemInput.value.trim() : '';
+                    const qty = qtyInput ? parseFloat(qtyInput.value) : 0;
+                    if (item && qty > 0) {
+                        records.push({date, stage, person, item, quantity: qty});
+                    }
+                }
+            });
 
-function showConfigModal() {
-    const html = `
-        <h3>Configure URLs</h3>
-        <label>Production URL:</label><br>
-        <input type="text" id="cfgProd" value="${PROD_URL}" style="width:100%;padding:8px;margin:8px 0;"><br>
-        <label>Vendor URL:</label><br>
-        <input type="text" id="cfgVendor" value="${VENDOR_URL}" style="width:100%;padding:8px;margin:8px 0;">
-        <button onclick="saveConfig()" class="btn-primary">Save</button>
-    `;
-    showModal(html);
-}
+            if (records.length === 0) {
+                showToast('No entries to submit');
+                return;
+            }
 
-function saveConfig() {
-    PROD_URL = document.getElementById('cfgProd').value;
-    VENDOR_URL = document.getElementById('cfgVendor').value;
-    closeModal();
-    showToast("URLs updated");
-}
+            const payload = {action: 'append', records: records};
+            const result = await apiCall(null, 'POST', payload);
 
-// ====================== START ======================
-window.onload = () => {
-    showToast("Jayco Unified Platform Ready", "#10b981");
-};
-</script>
+            if (result && result.status === 'ok') {
+                showToast(`${records.length} records submitted successfully!`);
+                clearForm();
+                await fetchData();
+            }
+        }
+
+        // ==================== DASHBOARD ====================
+        let trendChartInst = null;
+        let stageChartInst = null;
+
+        function populateMonthFilter() {
+            const select = document.getElementById('filterMonth');
+            select.innerHTML = '<option value="">All Months</option>';
+            const months = new Set();
+            allRecords.forEach(r => {
+                if (r.date) months.add(r.date.substring(0,7));
+            });
+            Array.from(months).sort().reverse().forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                select.appendChild(opt);
+            });
+        }
+
+        function populateStageFilter() {
+            const select = document.getElementById('filterStage');
+            select.innerHTML = '<option value="">All Stages</option>';
+            currentLayout.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.stage;
+                opt.textContent = s.stage;
+                select.appendChild(opt);
+            });
+        }
+
+        function populatePersonFilter() {
+            const select = document.getElementById('filterPerson');
+            select.innerHTML = '<option value="">All Persons</option>';
+            const persons = new Set();
+            allRecords.forEach(r => persons.add(r.person));
+            Array.from(persons).sort().forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                select.appendChild(opt);
+            });
+        }
+
+        function getFilteredRecords() {
+            const month = document.getElementById('filterMonth').value;
+            const stage = document.getElementById('filterStage').value;
+            const person = document.getElementById('filterPerson').value;
+
+            return allRecords.filter(r => {
+                let ok = true;
+                if (month && !r.date.startsWith(month)) ok = false;
+                if (stage && r.stage !== stage) ok = false;
+                if (person && r.person !== person) ok = false;
+                return ok;
+            });
+        }
+
+        function renderKPIs(filtered) {
+            const totalQty = filtered.reduce((a,r) => a + (parseFloat(r.quantity)||0), 0);
+            const days = new Set(filtered.map(r => r.date)).size;
+            const avg = days ? (totalQty / days).toFixed(1) : 0;
+            const persons = new Set(filtered.map(r => r.person)).size;
+            const skus = new Set(filtered.map(r => r.item)).size;
+
+            const html = `
+                <div class="kpi-card"><div class="kpi-value">${totalQty}</div><div>Total Quantity</div></div>
+                <div class="kpi-card"><div class="kpi-value">${days}</div><div>Active Days</div></div>
+                <div class="kpi-card"><div class="kpi-value">${avg}</div><div>Avg / Day</div></div>
+                <div class="kpi-card"><div class="kpi-value">${persons}</div><div>Persons</div></div>
+                <div class="kpi-card"><div class="kpi-value">${skus}</div><div>SKUs</div></div>
+            `;
+            document.getElementById('kpiGrid').innerHTML = html;
+        }
+
+        function renderTrendChart(filtered) {
+            const ctx = document.getElementById('trendChart');
+            const byDate = {};
+            filtered.forEach(r => {
+                if (!byDate[r.date]) byDate[r.date] = 0;
+                byDate[r.date] += parseFloat(r.quantity)||0;
+            });
+
+            const labels = Object.keys(byDate).sort();
+            const values = labels.map(d => byDate[d]);
+
+            if (trendChartInst) trendChartInst.destroy();
+            trendChartInst = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Quantity', data: values, backgroundColor: '#3498db' }] },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderStageChart(filtered) {
+            const byStage = {};
+            filtered.forEach(r => {
+                if (!byStage[r.stage]) byStage[r.stage] = 0;
+                byStage[r.stage] += parseFloat(r.quantity)||0;
+            });
+
+            const labels = Object.keys(byStage);
+            const values = Object.values(byStage);
+
+            const ctx = document.getElementById('stageChart');
+            if (stageChartInst) stageChartInst.destroy();
+            stageChartInst = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{ label: 'Quantity', data: values, backgroundColor: '#2ecc71' }]
+                },
+                options: { indexAxis: 'y', responsive: true }
+            });
+        }
+
+        function renderLogTable(filtered) {
+            const tbody = document.querySelector('#logTable tbody');
+            tbody.innerHTML = '';
+            filtered.sort((a,b) => b.date.localeCompare(a.date)).forEach(rec => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${rec.date}</td>
+                    <td>${rec.stage}</td>
+                    <td>${rec.person}</td>
+                    <td>${rec.item}</td>
+                    <td>${rec.quantity}</td>
+                    <td><span class="delete-btn" onclick="deleteRecord(${rec._row})">🗑</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRankings(filtered) {
+            // Person ranking
+            const personQty = {};
+            filtered.forEach(r => {
+                if (!personQty[r.person]) personQty[r.person] = 0;
+                personQty[r.person] += parseFloat(r.quantity)||0;
+            });
+            const sortedPersons = Object.entries(personQty).sort((a,b)=>b[1]-a[1]);
+            let html = '';
+            sortedPersons.forEach(([p,q],i) => {
+                html += `<tr><td>${i+1}</td><td>${p}</td><td>${q}</td></tr>`;
+            });
+            document.querySelector('#personTable tbody').innerHTML = html;
+
+            // Item ranking
+            const itemQty = {};
+            filtered.forEach(r => {
+                if (!itemQty[r.item]) itemQty[r.item] = 0;
+                itemQty[r.item] += parseFloat(r.quantity)||0;
+            });
+            const sortedItems = Object.entries(itemQty).sort((a,b)=>b[1]-a[1]);
+            html = '';
+            sortedItems.forEach(([item,q],i) => {
+                html += `<tr><td>${i+1}</td><td>${item}</td><td>${q}</td></tr>`;
+            });
+            document.querySelector('#itemTable tbody').innerHTML = html;
+        }
+
+        async function loadDashboard() {
+            await fetchData();
+            const filtered = getFilteredRecords();
+            renderKPIs(filtered);
+            renderTrendChart(filtered);
+            renderStageChart(filtered);
+            renderLogTable(filtered);
+            renderRankings(filtered);
+            populateMonthFilter();
+            populateStageFilter();
+            populatePersonFilter();
+        }
+
+        async function deleteRecord(row) {
+            if (!confirm('Delete this record?')) return;
+            const res = await apiCall(null, 'POST', {action: 'delete', row: row});
+            if (res && res.status === 'ok') {
+                showToast('Record deleted');
+                loadDashboard();
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterStage').value = '';
+            document.getElementById('filterPerson').value = '';
+            loadDashboard();
+        }
+
+        // ==================== LAYOUT EDITOR ====================
+        function renderLayoutEditor() {
+            const container = document.getElementById('stagesGrid');
+            container.innerHTML = '';
+
+            currentLayout.forEach((stage, idx) => {
+                const card = document.createElement('div');
+                card.className = 'stage-card';
+                let personsHTML = '';
+                stage.persons.forEach((p, i) => {
+                    personsHTML += `
+                        <div class="person-tag">
+                            ${p}
+                            <span onclick="removePerson(${idx},${i}); event.stopImmediatePropagation()" style="margin-left:8px;cursor:pointer;color:#e74c3c;">✕</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="stage-card-header" style="background:${stage.color};">${stage.stage}</div>
+                    <div class="persons-list">${personsHTML}</div>
+                    <div style="padding:10px 15px;border-top:1px solid #eee;">
+                        <input type="text" id="newp-${idx}" placeholder="Add person name" style="width:70%;padding:8px;">
+                        <button onclick="addPerson(${idx})" style="padding:8px 12px;">Add</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addPerson(idx) {
+            const input = document.getElementById(`newp-${idx}`);
+            const name = input.value.trim();
+            if (!name) return;
+            currentLayout[idx].persons.push(name);
+            input.value = '';
+            renderLayoutEditor();
+        }
+
+        function removePerson(stageIdx, personIdx) {
+            currentLayout[stageIdx].persons.splice(personIdx, 1);
+            renderLayoutEditor();
+        }
+
+        async function saveLayout() {
+            const payload = {action: 'saveLayout', stages: currentLayout};
+            const res = await apiCall(null, 'POST', payload);
+            if (res && res.status === 'ok') {
+                showToast('Layout saved to Google Sheet!');
+            }
+        }
+
+        // ==================== INIT ====================
+        function initDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+        }
+
+        async function initializeApp() {
+            loadConfig();
+            initDate();
+            buildEntryForm();
+            // Load data in background
+            await fetchLayout();
+            buildEntryForm(); // refresh with possible new layout
+            await fetchData();
+            showToast('App ready. Defaults loaded.', 1800);
+        }
+
+        window.onload = initializeApp;
+    </script>
 </body>
 </html>
