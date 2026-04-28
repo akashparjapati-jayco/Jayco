@@ -1,1011 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jayco Production Management</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  :root {
-    --navy-dark: #0f1f3d;
-    --navy-mid: #1e3a5f;
-    --navy-light: #2a4f82;
-    --accent: #e8a020;
-    --accent2: #3498db;
-    --bg: #f0f2f6;
-    --bg2: #ffffff;
-    --bg3: #e8eaef;
-    --text: #1a2035;
-    --text2: #4a5568;
-    --text3: #8a9ab0;
-    --border: #d0d8e8;
-    --radius: 6px;
-    --shadow: 0 2px 8px rgba(15,31,61,0.10);
-    --shadow-lg: 0 6px 24px rgba(15,31,61,0.14);
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
-  
-  /* TOPBAR */
-  #topbar{
-    background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 60%,var(--navy-light) 100%);
-    height:54px;display:flex;align-items:center;padding:0 16px;gap:12px;
-    position:sticky;top:0;z-index:100;box-shadow:0 3px 12px rgba(0,0,0,0.25);
-  }
-  #topbar .logo-wrap{display:flex;align-items:center;gap:10px}
-  #topbar .logo-img{width:36px;height:36px;border-radius:4px;object-fit:contain;background:#fff;padding:2px}
-  #topbar .brand{display:flex;flex-direction:column;line-height:1.2}
-  #topbar .brand-name{color:#fff;font-weight:700;font-size:15px;letter-spacing:1.5px}
-  #topbar .brand-addr{color:rgba(255,255,255,0.55);font-size:10px;letter-spacing:0.3px}
-  #topbar .spacer{flex:1}
-  #topbar .phone{color:rgba(255,255,255,0.65);font-size:11px}
-  #topbar .cfg-btn{
-    background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
-    color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;font-size:14px;
-    transition:background 0.2s;
-  }
-  #topbar .cfg-btn:hover{background:rgba(255,255,255,0.22)}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jayco Vendor Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --navy: #0f1f3d;
+            --navy-light: #1e3a5f;
+            --emerald: #10b981;
+            --purple: #8b5cf6;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background:#f8fafc; color:#1e2937; }
+        .topbar {
+            background: linear-gradient(90deg, var(--navy), var(--navy-light));
+            color: white;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .logo { width:50px; height:50px; background:white; color:var(--navy); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:bold; margin-right:12px; }
+        .tabs { display:flex; background:white; border-bottom:1px solid #e2e8f0; }
+        .tab {
+            padding:16px 24px;
+            cursor:pointer;
+            font-weight:600;
+            color:#64748b;
+        }
+        .tab.active {
+            color: var(--navy);
+            border-bottom:4px solid var(--emerald);
+        }
+        .content { padding:20px; max-width:1480px; margin:0 auto; }
+        .hidden { display:none !important; }
 
-  /* TABS */
-  #tab-bar{
-    background:var(--navy-dark);display:flex;padding:0 16px;
-    border-bottom:3px solid var(--accent);
-  }
-  .tab-btn{
-    color:rgba(255,255,255,0.6);border:none;background:none;
-    padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;
-    letter-spacing:0.5px;transition:color 0.2s,background 0.2s;
-    border-bottom:3px solid transparent;margin-bottom:-3px;
-  }
-  .tab-btn:hover{color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.07)}
-  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-
-  /* TAB CONTENT */
-  .tab-content{display:none;padding:16px}
-  .tab-content.active{display:block}
-
-  /* ENTRY FORM TAB */
-  .entry-toolbar{
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    background:#fff;border-radius:var(--radius);padding:10px 14px;
-    box-shadow:var(--shadow);margin-bottom:14px;border:1px solid var(--border);
-  }
-  .entry-toolbar label{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px;color:var(--text2)}
-  .entry-toolbar input[type=date]{
-    border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text);
-  }
-  #entry-info{color:var(--text3);font-size:12px;margin-left:4px}
-  .btn{padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all 0.15s}
-  .btn:hover{background:var(--bg3)}
-  .btn-primary{background:var(--navy-dark);color:#fff;border-color:var(--navy-dark)}
-  .btn-primary:hover{background:var(--navy-mid)}
-  .btn-danger{background:#c0392b;color:#fff;border-color:#c0392b}
-  .btn-danger:hover{background:#a93226}
-  .btn-success{background:#1e8449;color:#fff;border-color:#1e8449}
-  .btn-success:hover{background:#196f3d}
-
-  /* GRID */
-  .grid-wrapper{overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow-lg);border:1px solid var(--border)}
-  #entry-table{width:100%;border-collapse:collapse;min-width:900px}
-  #entry-table th{
-    background:var(--navy-dark);color:#fff;padding:8px 6px;text-align:center;
-    font-size:11px;font-weight:700;letter-spacing:0.4px;white-space:nowrap;
-    position:sticky;top:0;z-index:10;
-  }
-  #entry-table th:first-child{text-align:left;padding-left:10px;position:sticky;top:0;left:0;z-index:20;min-width:140px}
-  #entry-table td{padding:3px 4px;border-bottom:1px solid var(--border);vertical-align:middle}
-  #entry-table tbody tr:hover:not(.stage-header):not(.stage-totals){background:rgba(52,152,219,0.05)}
-  
-  td.col-person{
-    font-size:12px;font-weight:600;color:var(--text);padding:5px 8px;
-    position:sticky;left:0;background:#fff;z-index:5;border-right:2px solid var(--border);
-    white-space:nowrap;
-  }
-  tr.stage-header td{
-    font-weight:700;font-size:12px;color:#fff;letter-spacing:0.6px;
-    padding:6px 10px;text-transform:uppercase;
-  }
-  tr.stage-header td.col-person{color:#fff;border-right-color:rgba(255,255,255,0.3)}
-  tr.stage-totals td{
-    font-weight:700;font-size:11px;color:var(--text2);background:#f7f9fd;
-    padding:4px 6px;border-top:2px solid var(--border);
-  }
-  tr.stage-totals td.col-person{background:#f0f2f8;font-size:11px;color:var(--text3)}
-
-  .cell-product input{width:100%;border:1px solid var(--border);border-radius:3px;padding:4px 5px;font-size:11px;color:var(--text)}
-  .cell-qty input{width:60px;border:1px solid var(--border);border-radius:3px;padding:4px 5px;font-size:11px;text-align:right;color:var(--text)}
-  .cell-product input:focus,.cell-qty input:focus{outline:2px solid var(--accent2);border-color:var(--accent2)}
-
-  /* DASHBOARD */
-  .dash-filters{
-    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-    background:#fff;border-radius:var(--radius);padding:10px 14px;
-    box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--border);
-  }
-  .dash-filters label{font-weight:600;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px}
-  .dash-filters select{border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text)}
-  
-  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
-  .kpi-card{
-    background:#fff;border-radius:var(--radius);padding:14px 16px;
-    box-shadow:var(--shadow);border:1px solid var(--border);
-    border-top:3px solid var(--accent2);
-  }
-  .kpi-card .kpi-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
-  .kpi-card .kpi-value{font-size:26px;font-weight:800;color:var(--navy-dark);line-height:1}
-
-  .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-  .chart-card{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
-  .chart-card h3{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-  .chart-card canvas{max-height:220px}
-
-  .tables-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-  .table-card{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
-  .table-card h3{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-  .rank-table{width:100%;border-collapse:collapse}
-  .rank-table th{font-size:11px;font-weight:700;color:var(--text3);padding:5px 8px;text-align:left;border-bottom:2px solid var(--border)}
-  .rank-table td{font-size:12px;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text)}
-  .rank-bar-wrap{width:120px}
-  .rank-bar{height:8px;border-radius:4px;background:var(--accent2)}
-
-  .daylog-card{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
-  .daylog-card h3{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-  .daylog-table{width:100%;border-collapse:collapse}
-  .daylog-table th{font-size:11px;font-weight:700;color:var(--text3);padding:5px 8px;text-align:left;border-bottom:2px solid var(--border)}
-  .daylog-table td{font-size:12px;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text)}
-  .del-btn{background:none;border:none;color:#c0392b;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:3px}
-  .del-btn:hover{background:#fdecea}
-
-  /* LAYOUT EDITOR */
-  .layout-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .layout-header h2{font-size:15px;font-weight:700;color:var(--text)}
-  .stage-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-  .stage-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
-  .stage-card-header{padding:10px 14px;color:#fff;font-weight:700;font-size:13px;letter-spacing:0.5px}
-  .stage-card-body{padding:12px}
-  .person-list{list-style:none;margin-bottom:10px;max-height:180px;overflow-y:auto}
-  .person-list li{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bg3);font-size:12px;color:var(--text)}
-  .person-list li:last-child{border-bottom:none}
-  .remove-person{background:none;border:none;color:#c0392b;cursor:pointer;font-size:12px;padding:0 4px;line-height:1}
-  .remove-person:hover{color:#a93226}
-  .add-person-row{display:flex;gap:6px;margin-top:8px}
-  .add-person-row input{flex:1;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px}
-  .add-person-row button{padding:5px 10px;background:var(--navy-dark);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700}
-  .add-person-row button:hover{background:var(--navy-mid)}
-
-  /* MODAL */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:none;align-items:center;justify-content:center}
-  .modal-overlay.open{display:flex}
-  .modal-box{background:#fff;border-radius:10px;padding:24px;width:480px;max-width:95vw;box-shadow:var(--shadow-lg)}
-  .modal-box h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--navy-dark)}
-  .modal-box label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
-  .modal-box input[type=text]{width:100%;border:1px solid var(--border);border-radius:4px;padding:8px 10px;font-size:12px;margin-bottom:14px}
-  .modal-box .modal-footer{display:flex;gap:8px;justify-content:flex-end}
-
-  /* TOAST */
-  #toast{
-    position:fixed;bottom:20px;right:20px;z-index:9999;
-    background:var(--navy-dark);color:#fff;padding:10px 18px;border-radius:6px;
-    font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);
-    opacity:0;transform:translateY(10px);pointer-events:none;
-    transition:opacity 0.25s,transform 0.25s;
-  }
-  #toast.show{opacity:1;transform:translateY(0)}
-  #toast.success{background:#1e8449}
-  #toast.error{background:#c0392b}
-  #toast.info{background:var(--navy-mid)}
-
-  /* LOADING */
-  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.7);z-index:500;display:none;align-items:center;justify-content:center}
-  .loading-overlay.open{display:flex}
-  .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--navy-dark);border-radius:50%;animation:spin 0.7s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* MISC */
-  .section-title{font-size:13px;font-weight:700;color:var(--navy-dark);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-  @media(max-width:800px){
-    .kpi-row{grid-template-columns:repeat(3,1fr)}
-    .charts-row,.tables-row{grid-template-columns:1fr}
-  }
-  @media(max-width:480px){
-    .kpi-row{grid-template-columns:repeat(2,1fr)}
-    #topbar .brand-addr,.phone{display:none}
-  }
-</style>
+        .modal {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:2000;
+        }
+        .modal-content {
+            background:white; border-radius:12px; width:90%; max-width:620px; max-height:92vh; overflow:auto;
+            box-shadow:0 20px 40px rgba(0,0,0,0.3);
+        }
+        button {
+            padding:10px 18px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:500;
+        }
+        .btn-primary { background:#10b981; color:white; }
+        .btn-danger { background:#ef4444; color:white; }
+        .status-paid { background:#10b981; color:white; padding:3px 10px; border-radius:9999px; font-size:13px; }
+        .status-partial { background:#f59e0b; color:white; padding:3px 10px; border-radius:9999px; font-size:13px; }
+        .status-pending { background:#3b82f6; color:white; padding:3px 10px; border-radius:9999px; font-size:13px; }
+        .status-overdue { background:#ef4444; color:white; padding:3px 10px; border-radius:9999px; font-size:13px; }
+    </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div id="topbar">
-  <div class="logo-wrap">
-    <!-- Placeholder logo: replace src with your base64 image -->
-    <img class="logo-img" id="logo-img"
-      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMGYxZjNkIi8+PHRleHQgeD0iNTAlIiB5PSI1NSUiIGZpbGw9IiNlOGEwMjAiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPko8L3RleHQ+PC9zdmc+"
-      alt="Jayco">
-    <div class="brand">
-      <span class="brand-name">JAYCO ENGINEERING</span>
-      <span class="brand-addr">Plot No. 18,19,20, Dharti Industrial Park, Ahmedabad</span>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="logo">J</div>
+        <div>
+            <strong>JAYCO ENGINEERING</strong><br>
+            <small>Vendor Management System</small>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:15px;">
+            <span id="userInfo" style="font-size:14px;"></span>
+            <button onclick="logout()" style="background:rgba(255,255,255,0.2); color:white;">Logout</button>
+        </div>
     </div>
-  </div>
-  <div class="spacer"></div>
-  <span class="phone">+91 9512244473</span>
-  <button class="cfg-btn" onclick="openCfgModal()" title="Configure">⚙</button>
-</div>
 
-<!-- TAB BAR -->
-<div id="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('entry',this)">📋 Entry Form</button>
-  <button class="tab-btn" onclick="switchTab('dash',this)">📊 Dashboard</button>
-  <button class="tab-btn" onclick="switchTab('layout',this)">⚙ Edit Layout</button>
-</div>
-
-<!-- TAB 1: ENTRY FORM -->
-<div id="tab-entry" class="tab-content active">
-  <div class="entry-toolbar">
-    <label>Date: <input type="date" id="entry-date"></label>
-    <span id="entry-info" class="text-muted"></span>
-    <div class="spacer" style="flex:1"></div>
-    <button class="btn" onclick="clearForm()">Clear</button>
-    <button class="btn btn-primary" onclick="submitForm()">Submit ↑</button>
-  </div>
-  <div class="grid-wrapper">
-    <table id="entry-table">
-      <thead>
-        <tr>
-          <th class="col-person">Person</th>
-          <th>Product 1</th><th>Qty</th>
-          <th>Product 2</th><th>Qty</th>
-          <th>Product 3</th><th>Qty</th>
-          <th>Product 4</th><th>Qty</th>
-          <th>Product 5</th><th>Qty</th>
-        </tr>
-      </thead>
-      <tbody id="entry-tbody"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- TAB 2: DASHBOARD -->
-<div id="tab-dash" class="tab-content">
-  <div class="dash-filters">
-    <label>Month:
-      <select id="flt-month">
-        <option value="">All</option>
-      </select>
-    </label>
-    <label>Stage:
-      <select id="flt-stage"><option value="">All</option></select>
-    </label>
-    <label>Person:
-      <select id="flt-person"><option value="">All</option></select>
-    </label>
-    <button class="btn" onclick="clearDashFilters()">Clear</button>
-    <button class="btn btn-primary" onclick="loadDashboard()">Refresh</button>
-  </div>
-
-  <div class="kpi-row">
-    <div class="kpi-card"><div class="kpi-label">Total Qty</div><div class="kpi-value" id="kpi-qty">—</div></div>
-    <div class="kpi-card" style="border-top-color:#1e8449"><div class="kpi-label">Active Days</div><div class="kpi-value" id="kpi-days">—</div></div>
-    <div class="kpi-card" style="border-top-color:#b7950b"><div class="kpi-label">Avg / Day</div><div class="kpi-value" id="kpi-avg">—</div></div>
-    <div class="kpi-card" style="border-top-color:#7d3c98"><div class="kpi-label">Persons</div><div class="kpi-value" id="kpi-persons">—</div></div>
-    <div class="kpi-card" style="border-top-color:#c0392b"><div class="kpi-label">SKUs</div><div class="kpi-value" id="kpi-skus">—</div></div>
-  </div>
-
-  <div class="charts-row">
-    <div class="chart-card">
-      <h3>Monthly Trend</h3>
-      <canvas id="chart-monthly"></canvas>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div style="height:100vh; background:linear-gradient(135deg, #1e2937, #334155); display:flex; align-items:center; justify-content:center; color:white;">
+            <div style="background:white; color:#1e2937; padding:40px; border-radius:16px; width:380px; text-align:center;">
+                <div class="logo" style="margin:0 auto 20px; width:80px; height:80px; font-size:42px;">J</div>
+                <h2>JAYCO Vendor System</h2>
+                <input type="text" id="username" placeholder="Username" style="width:100%; padding:14px; margin:15px 0; border:1px solid #ccc; border-radius:8px;">
+                <input type="password" id="password" placeholder="Password" style="width:100%; padding:14px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+                <button onclick="login()" style="width:100%; padding:14px; background:#10b981; color:white; font-size:16px; margin-top:10px;">Sign In</button>
+                <button onclick="showSettingsModal()" style="margin-top:15px; background:none; border:1px solid #64748b; color:#64748b;">⚙ Settings</button>
+            </div>
+        </div>
     </div>
-    <div class="chart-card">
-      <h3>Stage-wise Breakdown</h3>
-      <canvas id="chart-stage"></canvas>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" class="hidden">
+        <div class="tabs" id="moduleTabs"></div>
+        <div class="content">
+            <!-- Vendor Master -->
+            <div id="tab-vendor" class="tab-content">
+                <div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="vendorSearch" placeholder="Search GSTIN or Name..." onkeyup="filterVendors()" style="padding:10px; width:300px;">
+                    <button onclick="showAddVendorModal()" class="btn-primary">＋ Add Vendor</button>
+                </div>
+                <table style="width:100%; border-collapse:collapse; background:white;" id="vendorTable">
+                    <thead><tr style="background:#f1f5f9;">
+                        <th>GSTIN</th><th>Vendor Name</th><th>Category</th><th>Credit Days</th><th>Status</th><th>Action</th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Invoices Tab -->
+            <div id="tab-invoice" class="tab-content hidden">
+                <button onclick="showNewInvoiceModal()" class="btn-primary">＋ New Invoice</button>
+                <button onclick="showImportModal()" style="margin-left:10px;">Import from Tally</button>
+                <table style="width:100%; margin-top:15px;" id="invoiceTable"></table>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="tab-payment" class="tab-content hidden">
+                <button onclick="showPaymentModal()" class="btn-primary">＋ Record Payment</button>
+                <table style="width:100%; margin-top:15px;" id="paymentTable"></table>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="tab-dashboard" class="tab-content hidden">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px;">
+                    <div style="background:linear-gradient(135deg,#ef4444,#f87171); color:white; padding:25px; border-radius:12px;">
+                        <h3>Total Outstanding</h3>
+                        <h2 id="kpiTotal">₹0</h2>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:white; padding:25px; border-radius:12px;">
+                        <h3>Overdue</h3>
+                        <h2 id="kpiOverdue">₹0</h2>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#3b82f6,#60a5fa); color:white; padding:25px; border-radius:12px;">
+                        <h3>Due in 15 Days</h3>
+                        <h2 id="kpiDueSoon">₹0</h2>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#10b981,#34d399); color:white; padding:25px; border-radius:12px;">
+                        <h3>Vendors</h3>
+                        <h2 id="kpiVendors">0</h2>
+                    </div>
+                </div>
+                <h3 style="margin:25px 0 10px;">Outstanding by Vendor</h3>
+                <table id="outstandingTable" style="width:100%;"></table>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div id="tab-users" class="tab-content hidden">User Management (Admin Only)</div>
+        </div>
     </div>
-  </div>
 
-  <div class="tables-row">
-    <div class="table-card">
-      <h3>Person-wise Ranking</h3>
-      <table class="rank-table">
-        <thead><tr><th>#</th><th>Person</th><th>Qty</th><th>Bar</th></tr></thead>
-        <tbody id="tbl-person"></tbody>
-      </table>
-    </div>
-    <div class="table-card">
-      <h3>SKU / Item Ranking</h3>
-      <table class="rank-table">
-        <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Bar</th></tr></thead>
-        <tbody id="tbl-sku"></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- Modals will be added dynamically via JS -->
 
-  <div class="daylog-card">
-    <h3>Day-wise Log</h3>
-    <div style="overflow-x:auto">
-      <table class="daylog-table">
-        <thead><tr><th>Date</th><th>Stage</th><th>Person</th><th>Item</th><th>Qty</th><th>Del</th></tr></thead>
-        <tbody id="tbl-daylog"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+    <div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:12px 24px;border-radius:8px;display:none;z-index:3000;"></div>
 
-<!-- TAB 3: EDIT LAYOUT -->
-<div id="tab-layout" class="tab-content">
-  <div class="layout-header">
-    <h2>Edit Form Layout</h2>
-    <button class="btn btn-primary" onclick="saveLayout()">Save Layout ↑</button>
-  </div>
-  <div class="stage-cards" id="stage-cards"></div>
-</div>
+    <script>
+        const VENDOR_URL = "https://script.google.com/macros/s/AKfycbzmLsJXmEx5Y4YkJx16L38287N3VFcTLUnriMlWYN5Rda6zhE35jR157SYuEln4KrPT/exec";
 
-<!-- CONFIGURE MODAL -->
-<div class="modal-overlay" id="cfg-modal">
-  <div class="modal-box">
-    <h3>⚙ Configure API URL</h3>
-    <label>Apps Script Web App URL</label>
-    <input type="text" id="cfg-url-input" placeholder="https://script.google.com/macros/s/...">
-    <div class="modal-footer">
-      <button class="btn" onclick="closeCfgModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCfgUrl()">Save</button>
-    </div>
-  </div>
-</div>
+        let SESSION = null;
+        let VENDORS = [], INVOICES = [], PAYMENTS = [], OUTSTANDING = [];
+        let SAVING = false;
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loading">
-  <div class="spinner"></div>
-</div>
+        function showToast(msg, color = "#10b981") {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = color;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
 
-<!-- TOAST -->
-<div id="toast"></div>
+        async function apiCall(params, body = null) {
+            let url = VENDOR_URL;
+            if (params) url += (url.includes('?') ? '&' : '?') + params;
 
-<script>
-/* ===== CONFIG ===== */
-const CFG = {
-  prodUrl: 'https://script.google.com/macros/s/AKfycbzBZVWpl6r69CD3VfQngh5QbXG3KMbJufHUy_kylg1MhAWukp5hKpghdKM2Ec857lHH/exec'
-};
+            const options = { redirect: 'follow' };
+            if (body) {
+                options.method = 'POST';
+                options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
+                options.body = JSON.stringify(body);
+            }
 
-function getApiUrl() {
-  return localStorage.getItem('jayco_url_override') || CFG.prodUrl;
-}
+            try {
+                const res = await fetch(url, options);
+                return await res.json();
+            } catch(e) {
+                console.error(e);
+                showToast("Connection error", "#ef4444");
+                return null;
+            }
+        }
 
-/* ===== DEFAULT DATA ===== */
-const DEFAULT_STAGES = [
-  { stage: '1 (Bottom)', color: '#2980b9', persons: ['KALUSHING','MAHESH','PRABHAT BHAI','BUDHAJI','DHARMESH BHAI','GANPAT','GOPAL','KETAN BHAI'] },
-  { stage: '1 (CAP)', color: '#0e6655', persons: ['GANPAT','RAMESH','BUDHAJI','KETAN BHAI'] },
-  { stage: '2 (Drill)', color: '#1e8449', persons: ['KIRAN','JAGDISH','VISHAL','PRABHAT BHAI','KETAN BHAI','BUDHAJI','SAHIL'] },
-  { stage: '3 (Berrings)', color: '#b7950b', persons: ['KETAN BHAI','PAVAN','JASHPAL','LAXMAN BHAI','FARUKH BHAI','SANDIP','BHAVIN','CHIRAG','GANPAT','MARUTI INDUSTRIES'] },
-  { stage: '4 (Grinding)', color: '#c0392b', persons: ['VANRAJ','DHAVAL'] },
-  { stage: '5 (Inspection)', color: '#7d3c98', persons: ['DILIP'] },
-  { stage: '6 (Paint)', color: '#ca6f1e', persons: ['PARESH','BHARAT','VANRAJ','CHIRAG'] },
-  { stage: 'Ring', color: '#a04000', persons: ['PRAKASH'] }
-];
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!username || !password) return showToast("Enter credentials", "#ef4444");
 
-let currentStages = JSON.parse(JSON.stringify(DEFAULT_STAGES));
-let allRecords = [];
-let chartMonthly = null;
-let chartStage = null;
+            const data = await apiCall(`action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+            if (data && data.status === 'ok') {
+                SESSION = data;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = `👤 ${data.name}`;
+                buildTabs();
+                loadAllData();
+            } else {
+                showToast("Invalid credentials", "#ef4444");
+            }
+        }
 
-/* ===== UTILITIES ===== */
-function toast(msg, type) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show ' + (type || '');
-  clearTimeout(el._t);
-  el._t = setTimeout(function() { el.className = ''; }, 3000);
-}
+        function logout() {
+            SESSION = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
 
-function showLoad() { document.getElementById('loading').classList.add('open'); }
-function hideLoad() { document.getElementById('loading').classList.remove('open'); }
+        function buildTabs() {
+            const container = document.getElementById('moduleTabs');
+            container.innerHTML = '';
 
-function todayStr() {
-  var d = new Date();
-  return d.toISOString().slice(0, 10);
-}
+            if (SESSION.modules.includes('vendor')) {
+                const tabs = [
+                    {id:'vendor', name:'Vendor Master'},
+                    {id:'invoice', name:'Invoices'},
+                    {id:'payment', name:'Payments'},
+                    {id:'dashboard', name:'Dashboard'}
+                ];
+                tabs.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'tab';
+                    div.textContent = t.name;
+                    div.onclick = () => switchTab(t.id);
+                    container.appendChild(div);
+                });
+            }
+        }
 
-function hexToRgba(hex, a) {
-  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-}
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            if (tabId === 'dashboard') loadOutstanding();
+        }
 
-/* ===== TABS ===== */
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-content').forEach(function(el){ el.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(el){ el.classList.remove('active'); });
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'dash') loadDashboard();
-  if (name === 'layout') renderLayoutEditor();
-}
+        async function loadAllData() {
+            const [v, i, p] = await Promise.all([
+                apiCall('action=vendors'),
+                apiCall('action=invoices'),
+                apiCall('action=payments')
+            ]);
 
-/* ===== ENTRY FORM ===== */
-function initDate() {
-  var d = document.getElementById('entry-date');
-  d.value = todayStr();
-}
+            if (v) VENDORS = v.vendors || [];
+            if (i) INVOICES = i.invoices || [];
+            if (p) PAYMENTS = p.payments || [];
 
-function buildForm() {
-  var tbody = document.getElementById('entry-tbody');
-  if (!tbody) { setTimeout(buildForm, 100); return; }
-  tbody.innerHTML = '';
+            renderVendors();
+            renderInvoices();
+            renderPayments();
+        }
 
-  currentStages.forEach(function(stg) {
-    // Stage header row
-    var hdr = document.createElement('tr');
-    hdr.className = 'stage-header';
-    hdr.style.background = stg.color;
-    var td0 = document.createElement('td');
-    td0.className = 'col-person';
-    td0.style.background = stg.color;
-    td0.textContent = stg.stage;
-    hdr.appendChild(td0);
-    for (var i = 0; i < 10; i++) {
-      var td = document.createElement('td');
-      td.style.background = stg.color;
-      hdr.appendChild(td);
-    }
-    tbody.appendChild(hdr);
+        async function loadOutstanding() {
+            const res = await apiCall('action=outstanding');
+            if (res && res.status === 'ok') {
+                OUTSTANDING = res.outstanding || [];
+                renderDashboard(res);
+            }
+        }
 
-    // Person rows
-    stg.persons.forEach(function(person) {
-      var tr = document.createElement('tr');
-      tr.dataset.stage = stg.stage;
-      tr.dataset.person = person;
+        function renderDashboard(data) {
+            document.getElementById('kpiTotal').textContent = '₹' + (data.totals?.total || 0).toLocaleString('en-IN');
+            document.getElementById('kpiOverdue').textContent = '₹' + (data.totals?.overdue || 0).toLocaleString('en-IN');
+            document.getElementById('kpiDueSoon').textContent = '₹' + (data.totals?.dueSoon || 0).toLocaleString('en-IN');
+            document.getElementById('kpiVendors').textContent = OUTSTANDING.length;
+            // Render table...
+        }
 
-      var nameCell = document.createElement('td');
-      nameCell.className = 'col-person';
-      nameCell.textContent = person;
-      tr.appendChild(nameCell);
+        function renderVendors() {
+            // Full implementation would go here
+            console.log("Vendors loaded:", VENDORS.length);
+        }
 
-      for (var p = 0; p < 5; p++) {
-        var tdProd = document.createElement('td');
-        tdProd.className = 'cell-product';
-        var inp = document.createElement('input');
-        inp.type = 'text';
-        inp.placeholder = 'Item';
-        inp.dataset.col = 'prod';
-        inp.dataset.pair = p;
-        inp.dataset.stage = stg.stage;
-        inp.dataset.person = person;
-        inp.addEventListener('input', function() { updateTotals(); updateEntryInfo(); });
-        inp.addEventListener('keydown', handleGridKey);
-        tdProd.appendChild(inp);
-        tr.appendChild(tdProd);
+        function renderInvoices() { console.log("Invoices loaded"); }
+        function renderPayments() { console.log("Payments loaded"); }
 
-        var tdQty = document.createElement('td');
-        tdQty.className = 'cell-qty';
-        var qinp = document.createElement('input');
-        qinp.type = 'number';
-        qinp.min = '0';
-        qinp.placeholder = '0';
-        qinp.dataset.col = 'qty';
-        qinp.dataset.pair = p;
-        qinp.dataset.stage = stg.stage;
-        qinp.dataset.person = person;
-        qinp.addEventListener('input', function() { updateTotals(); updateEntryInfo(); });
-        qinp.addEventListener('keydown', handleGridKey);
-        tdQty.appendChild(qinp);
-        tr.appendChild(tdQty);
-      }
-      tbody.appendChild(tr);
-    });
+        function showSettingsModal() {
+            alert("Settings Modal - URL Configuration (to be expanded)");
+        }
 
-    // Totals row
-    var tot = document.createElement('tr');
-    tot.className = 'stage-totals';
-    tot.dataset.totalStage = stg.stage;
-    var totLabel = document.createElement('td');
-    totLabel.className = 'col-person';
-    totLabel.textContent = 'Stage Total';
-    tot.appendChild(totLabel);
-    for (var k = 0; k < 5; k++) {
-      var blankProd = document.createElement('td');
-      tot.appendChild(blankProd);
-      var totQty = document.createElement('td');
-      totQty.dataset.totalPair = k;
-      totQty.style.textAlign = 'right';
-      totQty.style.fontVariantNumeric = 'tabular-nums';
-      tot.appendChild(totQty);
-    }
-    tbody.appendChild(tot);
-  });
+        // Placeholder modals
+        function showAddVendorModal() { alert("Add Vendor Modal"); }
+        function showNewInvoiceModal() { alert("New Invoice Modal"); }
+        function showPaymentModal() { alert("Record Payment Modal"); }
+        function showImportModal() { alert("Import from Tally Modal"); }
 
-  updateEntryInfo();
-}
-
-function handleGridKey(e) {
-  var inputs = Array.from(document.querySelectorAll('#entry-table input'));
-  var idx = inputs.indexOf(e.target);
-  if (idx < 0) return;
-  if (e.key === 'Tab') {
-    // default tab behaviour already works; just let it
-    return;
-  }
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    // Move to next row: same column position, skip 10 inputs per row (5 prod+5 qty)
-    var rowInputs = 10;
-    var colPos = idx % rowInputs;
-    var nextIdx = idx - colPos + rowInputs + colPos;
-    // Find next valid input (skip stage headers which have no inputs)
-    while (nextIdx < inputs.length) {
-      var tr = inputs[nextIdx].closest('tr');
-      if (tr && !tr.classList.contains('stage-header') && !tr.classList.contains('stage-totals')) {
-        inputs[nextIdx].focus();
-        break;
-      }
-      nextIdx += rowInputs;
-    }
-  }
-}
-
-function updateTotals() {
-  currentStages.forEach(function(stg) {
-    var totRow = document.querySelector('tr[data-total-stage="' + CSS.escape(stg.stage) + '"]');
-    if (!totRow) return;
-    for (var p = 0; p < 5; p++) {
-      var total = 0;
-      var qtyInputs = document.querySelectorAll('tr[data-stage="' + CSS.escape(stg.stage) + '"] input[data-col="qty"][data-pair="' + p + '"]');
-      qtyInputs.forEach(function(inp) {
-        var v = parseFloat(inp.value);
-        if (!isNaN(v)) total += v;
-      });
-      var cell = totRow.querySelector('td[data-total-pair="' + p + '"]');
-      if (cell) cell.textContent = total > 0 ? total : '';
-    }
-  });
-}
-
-function updateEntryInfo() {
-  var count = 0;
-  document.querySelectorAll('#entry-tbody tr[data-stage]').forEach(function(tr) {
-    for (var p = 0; p < 5; p++) {
-      var prod = tr.querySelector('input[data-col="prod"][data-pair="' + p + '"]');
-      var qty = tr.querySelector('input[data-col="qty"][data-pair="' + p + '"]');
-      if (prod && qty && prod.value.trim() && qty.value.trim()) count++;
-    }
-  });
-  document.getElementById('entry-info').textContent = count > 0 ? count + ' entr' + (count===1?'y':'ies') + ' ready' : '';
-}
-
-function clearForm() {
-  document.querySelectorAll('#entry-table input').forEach(function(inp) { inp.value = ''; });
-  updateTotals();
-  updateEntryInfo();
-}
-
-function collectFormRecords() {
-  var date = document.getElementById('entry-date').value;
-  if (!date) { toast('Please select a date', 'error'); return null; }
-  var records = [];
-  document.querySelectorAll('#entry-tbody tr[data-stage]').forEach(function(tr) {
-    var stage = tr.dataset.stage;
-    var person = tr.dataset.person;
-    for (var p = 0; p < 5; p++) {
-      var prodInp = tr.querySelector('input[data-col="prod"][data-pair="' + p + '"]');
-      var qtyInp = tr.querySelector('input[data-col="qty"][data-pair="' + p + '"]');
-      if (!prodInp || !qtyInp) continue;
-      var item = prodInp.value.trim();
-      var qty = parseFloat(qtyInp.value);
-      if (item && !isNaN(qty) && qty > 0) {
-        records.push({ date: date, stage: stage, person: person, item: item, quantity: qty });
-      }
-    }
-  });
-  return records;
-}
-
-function submitForm() {
-  var records = collectFormRecords();
-  if (!records) return;
-  if (records.length === 0) { toast('No data to submit', 'error'); return; }
-  showLoad();
-  fetch(getApiUrl(), {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'append', records: records })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    hideLoad();
-    if (d.status === 'ok') {
-      toast('Submitted ' + records.length + ' record(s)!', 'success');
-      clearForm();
-      allRecords = [];
-    } else {
-      toast('Error: ' + (d.message || 'Unknown'), 'error');
-    }
-  })
-  .catch(function(err) {
-    hideLoad();
-    toast('Submit failed: ' + err.message, 'error');
-  });
-}
-
-/* ===== DASHBOARD ===== */
-function loadDashboard() {
-  showLoad();
-  if (allRecords.length > 0) {
-    hideLoad();
-    renderDashboard();
-    return;
-  }
-  fetch(getApiUrl() + '?action=data', { redirect: 'follow' })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    hideLoad();
-    if (d.status === 'ok') {
-      allRecords = d.records || [];
-      populateDashFilters();
-      renderDashboard();
-    } else {
-      toast('Error loading data', 'error');
-    }
-  })
-  .catch(function(err) {
-    hideLoad();
-    toast('Load failed: ' + err.message, 'error');
-  });
-}
-
-function getFilteredRecords() {
-  var month = document.getElementById('flt-month').value;
-  var stage = document.getElementById('flt-stage').value;
-  var person = document.getElementById('flt-person').value;
-  return allRecords.filter(function(r) {
-    if (month && (!r.date || r.date.slice(0,7) !== month)) return false;
-    if (stage && r.stage !== stage) return false;
-    if (person && r.person !== person) return false;
-    return true;
-  });
-}
-
-function populateDashFilters() {
-  // Months
-  var months = {};
-  allRecords.forEach(function(r) { if (r.date) months[r.date.slice(0,7)] = 1; });
-  var mSel = document.getElementById('flt-month');
-  var curMonth = mSel.value;
-  mSel.innerHTML = '<option value="">All</option>';
-  Object.keys(months).sort().reverse().forEach(function(m) {
-    var o = document.createElement('option');
-    o.value = m; o.textContent = m;
-    mSel.appendChild(o);
-  });
-  if (curMonth) mSel.value = curMonth;
-
-  // Stages
-  var stages = {};
-  allRecords.forEach(function(r) { if (r.stage) stages[r.stage] = 1; });
-  var sSel = document.getElementById('flt-stage');
-  var curStage = sSel.value;
-  sSel.innerHTML = '<option value="">All</option>';
-  Object.keys(stages).sort().forEach(function(s) {
-    var o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    sSel.appendChild(o);
-  });
-  if (curStage) sSel.value = curStage;
-
-  // Persons
-  var persons = {};
-  allRecords.forEach(function(r) { if (r.person) persons[r.person] = 1; });
-  var pSel = document.getElementById('flt-person');
-  var curPerson = pSel.value;
-  pSel.innerHTML = '<option value="">All</option>';
-  Object.keys(persons).sort().forEach(function(p) {
-    var o = document.createElement('option');
-    o.value = p; o.textContent = p;
-    pSel.appendChild(o);
-  });
-  if (curPerson) pSel.value = curPerson;
-}
-
-function clearDashFilters() {
-  document.getElementById('flt-month').value = '';
-  document.getElementById('flt-stage').value = '';
-  document.getElementById('flt-person').value = '';
-  allRecords = [];
-  loadDashboard();
-}
-
-function renderDashboard() {
-  var recs = getFilteredRecords();
-
-  // KPIs
-  var totalQty = 0, days = {}, persons = {}, skus = {};
-  recs.forEach(function(r) {
-    var qty = parseFloat(r.quantity) || 0;
-    totalQty += qty;
-    if (r.date) days[r.date] = 1;
-    if (r.person) persons[r.person] = 1;
-    if (r.item) skus[r.item] = 1;
-  });
-  var activeDays = Object.keys(days).length;
-  var avgPerDay = activeDays > 0 ? Math.round(totalQty / activeDays) : 0;
-
-  document.getElementById('kpi-qty').textContent = totalQty.toLocaleString();
-  document.getElementById('kpi-days').textContent = activeDays;
-  document.getElementById('kpi-avg').textContent = avgPerDay.toLocaleString();
-  document.getElementById('kpi-persons').textContent = Object.keys(persons).length;
-  document.getElementById('kpi-skus').textContent = Object.keys(skus).length;
-
-  // Monthly Trend
-  var monthly = {};
-  recs.forEach(function(r) {
-    var m = r.date ? r.date.slice(0,7) : 'Unknown';
-    monthly[m] = (monthly[m] || 0) + (parseFloat(r.quantity) || 0);
-  });
-  var mKeys = Object.keys(monthly).sort();
-  var mVals = mKeys.map(function(k) { return monthly[k]; });
-
-  if (chartMonthly) chartMonthly.destroy();
-  var ctxM = document.getElementById('chart-monthly').getContext('2d');
-  chartMonthly = new Chart(ctxM, {
-    type: 'bar',
-    data: {
-      labels: mKeys,
-      datasets: [{ label: 'Total Qty', data: mVals, backgroundColor: 'rgba(52,152,219,0.75)', borderColor: '#2980b9', borderWidth: 1.5, borderRadius: 4 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } }
-    }
-  });
-
-  // Stage-wise
-  var stageMap = {};
-  recs.forEach(function(r) {
-    var s = r.stage || 'Unknown';
-    stageMap[s] = (stageMap[s] || 0) + (parseFloat(r.quantity) || 0);
-  });
-  var stageKeys = Object.keys(stageMap).sort(function(a,b) { return stageMap[b]-stageMap[a]; });
-  var stageVals = stageKeys.map(function(k) { return stageMap[k]; });
-  var stageCols = stageKeys.map(function(k) {
-    var found = currentStages.find(function(s) { return s.stage === k; });
-    return found ? hexToRgba(found.color, 0.8) : 'rgba(100,100,100,0.7)';
-  });
-
-  if (chartStage) chartStage.destroy();
-  var ctxS = document.getElementById('chart-stage').getContext('2d');
-  chartStage = new Chart(ctxS, {
-    type: 'bar',
-    data: {
-      labels: stageKeys,
-      datasets: [{ label: 'Qty', data: stageVals, backgroundColor: stageCols, borderRadius: 4 }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { grid: { display: false } } }
-    }
-  });
-
-  // Person ranking
-  var personMap = {};
-  recs.forEach(function(r) {
-    if (r.person) personMap[r.person] = (personMap[r.person] || 0) + (parseFloat(r.quantity) || 0);
-  });
-  var personArr = Object.keys(personMap).map(function(k) { return { name: k, qty: personMap[k] }; });
-  personArr.sort(function(a,b) { return b.qty - a.qty; });
-  var maxPQty = personArr.length > 0 ? personArr[0].qty : 1;
-  var pBody = document.getElementById('tbl-person');
-  pBody.innerHTML = '';
-  personArr.slice(0,20).forEach(function(p, i) {
-    var tr = document.createElement('tr');
-    var pct = Math.round(p.qty / maxPQty * 100);
-    tr.innerHTML = '<td>' + (i+1) + '</td><td>' + esc(p.name) + '</td><td>' + p.qty.toLocaleString() + '</td>' +
-      '<td class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></td>';
-    pBody.appendChild(tr);
-  });
-
-  // SKU ranking
-  var skuMap = {};
-  recs.forEach(function(r) {
-    if (r.item) skuMap[r.item] = (skuMap[r.item] || 0) + (parseFloat(r.quantity) || 0);
-  });
-  var skuArr = Object.keys(skuMap).map(function(k) { return { name: k, qty: skuMap[k] }; });
-  skuArr.sort(function(a,b) { return b.qty - a.qty; });
-  var maxSQty = skuArr.length > 0 ? skuArr[0].qty : 1;
-  var sBody = document.getElementById('tbl-sku');
-  sBody.innerHTML = '';
-  skuArr.slice(0,20).forEach(function(s, i) {
-    var tr = document.createElement('tr');
-    var pct = Math.round(s.qty / maxSQty * 100);
-    tr.innerHTML = '<td>' + (i+1) + '</td><td>' + esc(s.name) + '</td><td>' + s.qty.toLocaleString() + '</td>' +
-      '<td class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%;background:#7d3c98"></div></td>';
-    sBody.appendChild(tr);
-  });
-
-  // Day log
-  var sorted = recs.slice().sort(function(a,b) {
-    if (a.date < b.date) return 1;
-    if (a.date > b.date) return -1;
-    return 0;
-  });
-  var dlBody = document.getElementById('tbl-daylog');
-  dlBody.innerHTML = '';
-  sorted.forEach(function(r) {
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + esc(r.date || '') + '</td><td>' + esc(r.stage || '') + '</td>' +
-      '<td>' + esc(r.person || '') + '</td><td>' + esc(r.item || '') + '</td>' +
-      '<td style="text-align:right">' + (parseFloat(r.quantity)||0).toLocaleString() + '</td>' +
-      '<td><button class="del-btn" title="Delete" onclick="deleteRecord(' + r._row + ')">🗑</button></td>';
-    dlBody.appendChild(tr);
-  });
-}
-
-function deleteRecord(rowNum) {
-  if (!confirm('Delete this record?')) return;
-  showLoad();
-  fetch(getApiUrl(), {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'delete', row: rowNum })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    hideLoad();
-    if (d.status === 'ok') {
-      toast('Deleted', 'success');
-      allRecords = allRecords.filter(function(r) { return r._row !== rowNum; });
-      renderDashboard();
-    } else {
-      toast('Delete failed: ' + (d.message || ''), 'error');
-    }
-  })
-  .catch(function(err) { hideLoad(); toast('Error: ' + err.message, 'error'); });
-}
-
-function esc(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ===== LAYOUT EDITOR ===== */
-function renderLayoutEditor() {
-  var container = document.getElementById('stage-cards');
-  container.innerHTML = '';
-  currentStages.forEach(function(stg, si) {
-    var card = document.createElement('div');
-    card.className = 'stage-card';
-
-    var header = document.createElement('div');
-    header.className = 'stage-card-header';
-    header.style.background = stg.color;
-    header.textContent = stg.stage;
-    card.appendChild(header);
-
-    var body = document.createElement('div');
-    body.className = 'stage-card-body';
-
-    var ul = document.createElement('ul');
-    ul.className = 'person-list';
-    ul.id = 'plist-' + si;
-    stg.persons.forEach(function(p, pi) {
-      var li = createPersonLi(p, si, pi);
-      ul.appendChild(li);
-    });
-    body.appendChild(ul);
-
-    var addRow = document.createElement('div');
-    addRow.className = 'add-person-row';
-    var addInput = document.createElement('input');
-    addInput.type = 'text';
-    addInput.placeholder = 'Add name…';
-    addInput.id = 'add-input-' + si;
-    addInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') addPerson(si); });
-    var addBtn = document.createElement('button');
-    addBtn.textContent = 'Add';
-    addBtn.onclick = (function(idx) { return function() { addPerson(idx); }; })(si);
-    addRow.appendChild(addInput);
-    addRow.appendChild(addBtn);
-    body.appendChild(addRow);
-    card.appendChild(body);
-    container.appendChild(card);
-  });
-}
-
-function createPersonLi(name, si, pi) {
-  var li = document.createElement('li');
-  li.dataset.pi = pi;
-  var span = document.createElement('span');
-  span.textContent = name;
-  var btn = document.createElement('button');
-  btn.className = 'remove-person';
-  btn.textContent = '✕';
-  btn.title = 'Remove';
-  btn.onclick = (function(stageIdx, personIdx) {
-    return function() { removePerson(stageIdx, personIdx); };
-  })(si, pi);
-  li.appendChild(span);
-  li.appendChild(btn);
-  return li;
-}
-
-function removePerson(si, pi) {
-  currentStages[si].persons.splice(pi, 1);
-  renderLayoutEditor();
-}
-
-function addPerson(si) {
-  var inp = document.getElementById('add-input-' + si);
-  var name = inp.value.trim().toUpperCase();
-  if (!name) return;
-  if (currentStages[si].persons.indexOf(name) >= 0) { toast('Already exists', 'error'); return; }
-  currentStages[si].persons.push(name);
-  renderLayoutEditor();
-}
-
-function saveLayout() {
-  showLoad();
-  fetch(getApiUrl(), {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'saveLayout', stages: currentStages })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    hideLoad();
-    if (d.status === 'ok') {
-      toast('Layout saved!', 'success');
-      buildForm();
-    } else {
-      toast('Save failed: ' + (d.message || ''), 'error');
-    }
-  })
-  .catch(function(err) { hideLoad(); toast('Error: ' + err.message, 'error'); });
-}
-
-/* ===== CONFIG MODAL ===== */
-function openCfgModal() {
-  document.getElementById('cfg-url-input').value = getApiUrl();
-  document.getElementById('cfg-modal').classList.add('open');
-}
-
-function closeCfgModal() {
-  document.getElementById('cfg-modal').classList.remove('open');
-}
-
-function saveCfgUrl() {
-  var url = document.getElementById('cfg-url-input').value.trim();
-  if (!url) { toast('URL cannot be empty', 'error'); return; }
-  localStorage.setItem('jayco_url_override', url);
-  closeCfgModal();
-  toast('URL updated', 'success');
-}
-
-document.getElementById('cfg-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeCfgModal();
-});
-
-/* ===== LOAD LAYOUT FROM API ===== */
-function loadLayout() {
-  fetch(getApiUrl() + '?action=layout', { redirect: 'follow' })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.status === 'ok' && d.stages && d.stages.length > 0) {
-      currentStages = d.stages;
-      buildForm();
-    }
-  })
-  .catch(function() {
-    // Silently fail — form already built with defaults
-  });
-}
-
-/* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', function() {
-  initDate();
-  buildForm();         // Build immediately with defaults
-  loadLayout();        // Then update from API if available
-});
-</script>
+        window.onload = () => {
+            showToast("Jayco Vendor System Ready", "#10b981");
+        };
+    </script>
 </body>
 </html>
